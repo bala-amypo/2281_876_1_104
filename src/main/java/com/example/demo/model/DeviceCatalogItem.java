@@ -1,21 +1,39 @@
 package com.example.demo.model;
 
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
 
-@Model
-public class DeviceCatalogItem{
+@Entity
+@Table(name = "device_catalog_item")
+public class DeviceCatalogItem {
+
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String employeeId;
-    private String fullName;
-    private String email;
-    private String department;
-    private String jobRole;
-    private Boolean active;
-    private LocalDateTime createdAt;
 
-     public Long getId() {
+    @Column(unique = true)
+    private String deviceCode;
+
+    private String deviceType;
+    private String model;
+    private Integer maxAllowedPerEmployee;
+    private Boolean active;
+
+    // No-argument constructor
+    public DeviceCatalogItem() {
+    }
+
+    // Parameterized constructor
+    public DeviceCatalogItem(String deviceCode, String deviceType,String model, Integer maxAllowedPerEmployee,Boolean active) {
+                             
+        this.deviceCode = deviceCode;
+        this.deviceType = deviceType;
+        this.model = model;
+        this.maxAllowedPerEmployee = maxAllowedPerEmployee;
+        this.active = active;
+    }
+
+    // getters and setters
+    public Long getId() {
         return id;
     }
 
@@ -23,44 +41,36 @@ public class DeviceCatalogItem{
         this.id = id;
     }
 
-    public String getEmployeeId() {
-        return employeeId;
+    public String getDeviceCode() {
+        return deviceCode;
     }
 
-    public void setEmployeeId(String employeeId) {
-        this.employeeId = employeeId;
+    public void setDeviceCode(String deviceCode) {
+        this.deviceCode = deviceCode;
     }
 
-    public String getFullName() {
-        return fullName;
+    public String getDeviceType() {
+        return deviceType;
     }
 
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
+    public void setDeviceType(String deviceType) {
+        this.deviceType = deviceType;
     }
 
-    public String getEmail() {
-        return email;
+    public String getModel() {
+        return model;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public void setModel(String model) {
+        this.model = model;
     }
 
-    public String getDepartment() {
-        return department;
+    public Integer getMaxAllowedPerEmployee() {
+        return maxAllowedPerEmployee;
     }
 
-    public void setDepartment(String department) {
-        this.department = department;
-    }
-
-    public String getJobRole() {
-        return jobRole;
-    }
-
-    public void setJobRole(String jobRole) {
-        this.jobRole = jobRole;
+    public void setMaxAllowedPerEmployee(Integer maxAllowedPerEmployee) {
+        this.maxAllowedPerEmployee = maxAllowedPerEmployee;
     }
 
     public Boolean getActive() {
@@ -69,25 +79,5 @@ public class DeviceCatalogItem{
 
     public void setActive(Boolean active) {
         this.active = active;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public DeviceCatalogItem(String employeeId, String fullName, String email,String department, String jobRole,Boolean active, LocalDateTime createdAt) {
-        this.employeeId = employeeId;
-        this.fullName = fullName;
-        this.email = email;
-        this.department = department;
-        this.jobRole = jobRole;
-        this.active = active;
-        this.createdAt = createdAt;
-    }
-    public DeviceCatalogItem() {
     }
 }
