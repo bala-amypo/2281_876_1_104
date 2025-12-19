@@ -4,8 +4,6 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.example.demo.exception.BadRequestException;
-import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.model.DeviceCatalogItem;
 import com.example.demo.repository.DeviceCatalogItemRepository;
 import com.example.demo.service.DeviceCatalogService;
@@ -21,22 +19,50 @@ public class DeviceCatalogServiceImpl implements DeviceCatalogService {
 
     @Override
     public DeviceCatalogItem createItem(DeviceCatalogItem item) {
-        if (item.getMaxAllowedPerEmployee() < 1) {
-            throw new BadRequestException("maxAllowedPerEmployee");
+
+        // validate maxAllowedPerEmployee
+        if (item.getMaxAllowedPerEmployee() <= 0) {
+            throw new RuntimeException("maxAllowedPerEmployee");
         }
+
+        // validate unique deviceCode
+        repo.findByDeviceCode(item.getDeviceCode())
+                .ifPresent(existing -> {
+                    throw new RuntimeException(
+                            "Device with code already exists: " + item.getDeviceCode());
+                });
+
         return repo.save(item);
     }
 
     @Override
-    public void updateActiveStatus(Long id, boolean active) {
+    public DeviceCatalogItem updateActiveStatus(Long id, boolean active) {
+
         DeviceCatalogItem item = repo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Device not found"));
+                .orElseThrow(() ->
+                        new RuntimeException("Device not found with id: " + id));
+
         item.setActive(active);
-        repo.save(item);
+        return repo.save(item);
     }
 
     @Override
     public List<DeviceCatalogItem> getAllItems() {
         return repo.findAll();
+    }
+
+    @Override
+    public DeviceCatalogItem getItemById(Long id) {
+        return repo.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("Device not found with id: " + id));
+    }
+
+    @Override
+    public void deleteItem(Long id) {
+        if (!repo.existsById(id)) {
+            throw new RuntimeException("Device not found with id: " + id);
+        }
+        repo.deleteById(id);
     }
 }
