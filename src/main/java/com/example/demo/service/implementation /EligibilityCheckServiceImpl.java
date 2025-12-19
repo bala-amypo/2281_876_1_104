@@ -122,7 +122,7 @@ public class EligibilityCheckServiceImpl implements EligibilityCheckService {
     public EligibilityCheckRecord getCheckById(Long checkId) {
         return checkRepo.findById(checkId)
             .orElseThrow(() ->
-                    new ResourceNotFoundException("Eligibility check not found"));
+                new ResourceNotFoundException("Eligibility check not found"));
     }
 
 }
