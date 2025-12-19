@@ -37,7 +37,7 @@ public class DeviceCatalogServiceImpl implements DeviceCatalogService {
 
     @Override
     public DeviceCatalogItem updateActiveStatus(Long id, boolean active) {
-
+        //to check if id is exists or not
         DeviceCatalogItem item = repo.findById(id)
                 .orElseThrow(() ->
                         new RuntimeException("Device not found with id: " + id));
