@@ -1,10 +1,11 @@
 package com.example.demo.service.implementation;
 
-import java.util.*;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-
+import com.example.demo.exception.BadRequestException;
+import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.model.DeviceCatalogItem;
 import com.example.demo.repository.DeviceCatalogItemRepository;
 import com.example.demo.service.DeviceCatalogService;
@@ -20,28 +21,22 @@ public class DeviceCatalogServiceImpl implements DeviceCatalogService {
 
     @Override
     public DeviceCatalogItem createItem(DeviceCatalogItem item) {
+        if (item.getMaxAllowedPerEmployee() < 1) {
+            throw new BadRequestException("maxAllowedPerEmployee");
+        }
         return repo.save(item);
     }
 
     @Override
     public void updateActiveStatus(Long id, boolean active) {
-    Optional<DeviceCatalogItem> optionalItem = repo.findById(id);
-
-    if (optionalItem.isPresent()) {
-        DeviceCatalogItem item = optionalItem.get();
+        DeviceCatalogItem item = repo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Device not found"));
         item.setActive(active);
         repo.save(item);
-    } else {
-        throw new RuntimeException("DeviceCatalogItem not found with id: " + id);
     }
-    }
+
     @Override
     public List<DeviceCatalogItem> getAllItems() {
         return repo.findAll();
     }
 }
-
-
-
-
-
