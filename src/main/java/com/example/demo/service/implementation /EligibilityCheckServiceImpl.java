@@ -11,7 +11,7 @@ import com.example.demo.service.EligibilityCheckService;
 @Service
 public class EligibilityCheckServiceImpl implements EligibilityCheckService {
 
-    private final EmployeeRepository employeeRepo;
+    private final EmployeeProfileRepository employeeRepo;
     private final DeviceCatalogItemRepository deviceRepo;
     private final IssuedDeviceRecordRepository issuedRepo;
     private final PolicyRuleRepository policyRepo;
