@@ -35,3 +35,8 @@ public class DeviceCatalogServiceImpl implements DeviceCatalogService {
         return repo.findAll();
     }
 }
+
+
+
+
+
