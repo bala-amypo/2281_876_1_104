@@ -1,6 +1,6 @@
 package com.example.demo.service.implementation;
 
-import java.util.List;
+import java.util.*;
 
 import org.springframework.stereotype.Service;
 
@@ -25,7 +25,7 @@ public class DeviceCatalogServiceImpl implements DeviceCatalogService {
 
     @Override
     public void updateActiveStatus(Long id, boolean active) {
-        DeviceCatalogItem item = repo.findById(id);
+        Optional<DeviceCatalogItem> item = repo.findById(id);
         // item.setActive(active);
         repo.save(item);
     }
