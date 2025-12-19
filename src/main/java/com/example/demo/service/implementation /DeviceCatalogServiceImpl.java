@@ -25,11 +25,16 @@ public class DeviceCatalogServiceImpl implements DeviceCatalogService {
 
     @Override
     public void updateActiveStatus(Long id, boolean active) {
-        Optional<DeviceCatalogItem> item = repo.findById(id);
-        // item.setActive(active);
-        repo.save(item);
-    }
+    Optional<DeviceCatalogItem> optionalItem = repo.findById(id);
 
+    if (optionalItem.isPresent()) {
+        DeviceCatalogItem item = optionalItem.get();
+        item.setActive(active);
+        repo.save(item);
+    } else {
+        throw new RuntimeException("DeviceCatalogItem not found with id: " + id);
+    }
+    }
     @Override
     public List<DeviceCatalogItem> getAllItems() {
         return repo.findAll();
