@@ -118,4 +118,11 @@ public class EligibilityCheckServiceImpl implements EligibilityCheckService {
     public List<EligibilityCheckRecord> getChecksByEmployee(Long employeeId) {
         return checkRepo.findByEmployeeId(employeeId);
     }
+    @Override
+public EligibilityCheckRecord getCheckById(Long checkId) {
+    return checkRepo.findById(checkId)
+            .orElseThrow(() ->
+                    new ResourceNotFoundException("Eligibility check not found"));
+}
+
 }
