@@ -25,7 +25,7 @@ public class DeviceCatalogServiceImpl implements DeviceCatalogService {
 
     @Override
     public void updateActiveStatus(Long id, boolean active) {
-        DeviceCatalogItem item = repo.findById(id)
+        DeviceCatalogItem item = repo.findById(id);
         // item.setActive(active);
         repo.save(item);
     }
