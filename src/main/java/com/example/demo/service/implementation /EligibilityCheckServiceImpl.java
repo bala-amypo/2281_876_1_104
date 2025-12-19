@@ -18,7 +18,7 @@ public class EligibilityCheckServiceImpl implements EligibilityCheckService {
     private final EligibilityCheckRecordRepository checkRepo;
 
     public EligibilityCheckServiceImpl(
-            EmployeeRepository employeeRepo,
+            EmployeeProfileRepository employeeRepo,
             DeviceCatalogItemRepository deviceRepo,
             IssuedDeviceRecordRepository issuedRepo,
             PolicyRuleRepository policyRepo,
