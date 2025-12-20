@@ -1,6 +1,7 @@
 package com.example.demo.service.impl;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
@@ -65,19 +66,19 @@ public class EligibilityCheckServiceImpl implements EligibilityCheckService {
             reason = "Device is inactive";
         }
 
-        // 3. Check if device already issued (✅ FIXED METHOD)
+        // 3. Check if device already issued
         if (eligible && issuedRepo
-                .findByEmployeeIdAndDeviceItemIdAndActiveTrue(employeeId, deviceItemId)
+                .findByEmployeeIdAndDeviceItemIdAndStatus(employeeId, deviceItemId, "ISSUED")
                 .isPresent()) {
 
             eligible = false;
             reason = "Device already issued to employee";
         }
 
-        // 4. Max allowed devices per employee (✅ FIXED METHOD)
+        // 4. Max allowed devices per employee
         if (eligible) {
             long activeCount =
-                    issuedRepo.countByEmployeeIdAndActiveTrue(employeeId);
+                    issuedRepo.countByEmployeeIdAndStatus(employeeId, "ISSUED");
 
             if (activeCount >= device.getMaxAllowedPerEmployee()) {
                 eligible = false;
@@ -100,7 +101,7 @@ public class EligibilityCheckServiceImpl implements EligibilityCheckService {
 
                 if (applies) {
                     long count =
-                            issuedRepo.countByEmployeeIdAndActiveTrue(employeeId);
+                            issuedRepo.countByEmployeeIdAndStatus(employeeId, "ISSUED");
 
                     if (count >= rule.getMaxDevicesAllowed()) {
                         eligible = false;
