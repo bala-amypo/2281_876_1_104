@@ -1,31 +1,31 @@
 package com.example.demo.repository;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 
 import com.example.demo.model.IssuedDeviceRecord;
 
-public interface IssuedDeviceRecordRepository extends JpaRepository<IssuedDeviceRecord, Long> {
+public interface IssuedDeviceRecordRepository
+        extends JpaRepository<IssuedDeviceRecord, Long> {
 
-    // REQUIRED BY QUESTION – MUST USE @Query
+    // 🔴 CRITICAL: only ACTIVE (ISSUED) record
     @Query("""
-        SELECT COUNT(i)
-        FROM IssuedDeviceRecord i
-        WHERE i.employeeId = :employeeId
-          AND i.returnedDate IS NULL
+        SELECT r FROM IssuedDeviceRecord r
+        WHERE r.employeeId = :employeeId
+          AND r.deviceItemId = :deviceItemId
+          AND r.status = 'ISSUED'
     """)
-    long countActiveDevicesForEmployee(@Param("employeeId") Long employeeId);
+    IssuedDeviceRecord findActiveByEmployeeAndDevice(Long employeeId, Long deviceItemId);
 
+    // 🔴 CRITICAL: count active devices for employee
     @Query("""
-        SELECT i
-        FROM IssuedDeviceRecord i
-        WHERE i.employeeId = :employeeId
-          AND i.deviceItemId = :deviceItemId
-          AND i.returnedDate IS NULL
+        SELECT COUNT(r) FROM IssuedDeviceRecord r
+        WHERE r.employeeId = :employeeId
+          AND r.status = 'ISSUED'
     """)
-    IssuedDeviceRecord findActiveByEmployeeAndDevice(
-            @Param("employeeId") Long employeeId,
-            @Param("deviceItemId") Long deviceItemId
-    );
+    Long countActiveDevicesForEmployee(Long employeeId);
+
+    List<IssuedDeviceRecord> findByEmployeeId(Long employeeId);
 }

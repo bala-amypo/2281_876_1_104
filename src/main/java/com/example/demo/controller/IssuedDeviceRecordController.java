@@ -2,7 +2,7 @@ package com.example.demo.controller;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.example.demo.model.IssuedDeviceRecord;
@@ -12,22 +12,35 @@ import com.example.demo.service.IssuedDeviceRecordService;
 @RequestMapping("/api/issued-devices")
 public class IssuedDeviceRecordController {
 
-    @Autowired
-    private IssuedDeviceRecordService service;
+    private final IssuedDeviceRecordService service;
 
-    @PostMapping("/")
-    public IssuedDeviceRecord issueDevice(@RequestBody IssuedDeviceRecord record) {
-        return service.issueDevice(record);
+    public IssuedDeviceRecordController(IssuedDeviceRecordService service) {
+        this.service = service;
     }
 
+    // POST /api/issued-devices
+    @PostMapping
+    public ResponseEntity<IssuedDeviceRecord> issueDevice(
+            @RequestBody IssuedDeviceRecord record) {
+        return ResponseEntity.ok(service.issueDevice(record));
+    }
+
+    // PUT /api/issued-devices/{id}/return
     @PutMapping("/{id}/return")
-    public String returnDevice(@PathVariable Long id) {
-        service.returnDevice(id);
-        return "Device returned successfully";
+    public ResponseEntity<IssuedDeviceRecord> returnDevice(@PathVariable Long id) {
+        return ResponseEntity.ok(service.returnDevice(id));
     }
 
+    // GET /api/issued-devices/employee/{employeeId}
     @GetMapping("/employee/{employeeId}")
-    public List<IssuedDeviceRecord> getByEmployee(@PathVariable Long employeeId) {
-        return service.getIssuedDevicesByEmployee(employeeId);
+    public ResponseEntity<List<IssuedDeviceRecord>> getByEmployee(
+            @PathVariable Long employeeId) {
+        return ResponseEntity.ok(service.getIssuedDevicesByEmployee(employeeId));
+    }
+
+    // GET /api/issued-devices/{id}
+    @GetMapping("/{id}")
+    public ResponseEntity<IssuedDeviceRecord> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(service.getById(id));
     }
 }
