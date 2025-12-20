@@ -1,19 +1,21 @@
 package com.example.demo.repository;
 
+import com.example.demo.model.IssuedDeviceRecord;
+import org.springframework.data.jpa.repository.JpaRepository;
+
 import java.util.List;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-
-import com.example.demo.model.IssuedDeviceRecord;
-
-public interface IssuedDeviceRecordRepository extends JpaRepository<IssuedDeviceRecord, Long> {
+public interface IssuedDeviceRecordRepository
+        extends JpaRepository<IssuedDeviceRecord, Long> {
 
     List<IssuedDeviceRecord> findByEmployeeId(Long employeeId);
 
-    IssuedDeviceRecord findActiveByEmployeeAndDevice(Long employeeId, Long deviceItemId);
+    IssuedDeviceRecord findByEmployeeIdAndDeviceItemIdAndActiveTrue(
+            Long employeeId,
+            Long deviceItemId
+    );
 
-    long countActiveDevicesForEmployee(Long employeeId); 
+    long countByEmployeeIdAndActiveTrue(Long employeeId);
 }
 
 //     // 🔴 CRITICAL: only ACTIVE (ISSUED) record
@@ -35,22 +37,3 @@ public interface IssuedDeviceRecordRepository extends JpaRepository<IssuedDevice
 
 //     List<IssuedDeviceRecord> findByEmployeeId(Long employeeId);
 
-package com.example.demo.repository;
-
-import com.example.demo.model.IssuedDeviceRecord;
-import org.springframework.data.jpa.repository.JpaRepository;
-
-import java.util.List;
-
-public interface IssuedDeviceRecordRepository
-        extends JpaRepository<IssuedDeviceRecord, Long> {
-
-    List<IssuedDeviceRecord> findByEmployeeId(Long employeeId);
-
-    IssuedDeviceRecord findByEmployeeIdAndDeviceItemIdAndActiveTrue(
-            Long employeeId,
-            Long deviceItemId
-    );
-
-    long countByEmployeeIdAndActiveTrue(Long employeeId);
-}
