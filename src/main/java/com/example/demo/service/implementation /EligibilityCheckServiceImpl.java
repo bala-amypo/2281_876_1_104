@@ -1,3 +1,21 @@
+package com.example.demo.service.implementation;
+
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
+import com.example.demo.exception.ResourceNotFoundException;
+import com.example.demo.model.DeviceCatalogItem;
+import com.example.demo.model.EmployeeProfile;
+import com.example.demo.model.EligibilityCheckRecord;
+import com.example.demo.model.PolicyRule;
+import com.example.demo.repository.DeviceCatalogItemRepository;
+import com.example.demo.repository.EmployeeProfileRepository;
+import com.example.demo.repository.EligibilityCheckRecordRepository;
+import com.example.demo.repository.IssuedDeviceRecordRepository;
+import com.example.demo.repository.PolicyRuleRepository;
+import com.example.demo.service.EligibilityCheckService;
+
 @Service
 public class EligibilityCheckServiceImpl implements EligibilityCheckService {
 
@@ -27,6 +45,7 @@ public class EligibilityCheckServiceImpl implements EligibilityCheckService {
         boolean eligible = true;
         String reason = "Eligible";
 
+        // 1. Employee exists & active
         EmployeeProfile employee = employeeRepo.findById(employeeId)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found"));
 
@@ -35,6 +54,7 @@ public class EligibilityCheckServiceImpl implements EligibilityCheckService {
             reason = "Employee is inactive";
         }
 
+        // 2. Device exists & active
         DeviceCatalogItem device = deviceRepo.findById(deviceItemId)
                 .orElseThrow(() -> new ResourceNotFoundException("Device not found"));
 
@@ -43,21 +63,26 @@ public class EligibilityCheckServiceImpl implements EligibilityCheckService {
             reason = "Device is inactive";
         }
 
+        // 3. No active issuance exists
         if (eligible && issuedRepo.findActiveByEmployeeAndDevice(employeeId, deviceItemId) != null) {
             eligible = false;
             reason = "Device already issued to employee";
         }
 
+        // 4. Max allowed devices per employee
         if (eligible) {
-            long count = issuedRepo.countActiveDevicesForEmployee(employeeId);
-            if (count >= device.getMaxAllowedPerEmployee()) {
+            long activeCount = issuedRepo.countActiveDevicesForEmployee(employeeId);
+            if (activeCount >= device.getMaxAllowedPerEmployee()) {
                 eligible = false;
                 reason = "Max allowed devices exceeded";
             }
         }
 
+        // 5. Policy rules
         if (eligible) {
-            for (PolicyRule rule : policyRepo.findByActiveTrue()) {
+            List<PolicyRule> rules = policyRepo.findByActiveTrue();
+
+            for (PolicyRule rule : rules) {
 
                 boolean applies =
                         (rule.getAppliesToRole() != null &&
@@ -77,6 +102,7 @@ public class EligibilityCheckServiceImpl implements EligibilityCheckService {
             }
         }
 
+        // 6. Save eligibility record
         EligibilityCheckRecord record = new EligibilityCheckRecord();
         record.setEmployeeId(employeeId);
         record.setDeviceItemId(deviceItemId);
