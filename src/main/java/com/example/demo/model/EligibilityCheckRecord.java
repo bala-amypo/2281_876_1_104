@@ -24,8 +24,8 @@ public class EligibilityCheckRecord {
     // Automatically set checkedAt before insert
     @PrePersist
     public void prePersist() {
-        if (this.createdAt == null) {
-            this.createdAt = LocalDateTime.now();
+        if (this.checkedAt == null) {
+            this.checkedAt = LocalDateTime.now();
         }
     }
 
