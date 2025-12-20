@@ -1,44 +1,44 @@
-package com.example.demo.controller;
+// package com.example.demo.controller;
 
-import java.util.List;
+// import java.util.List;
 
-import org.springframework.web.bind.annotation.*;
+// import org.springframework.web.bind.annotation.*;
 
-import com.example.demo.model.EligibilityCheckRecord;
-import com.example.demo.service.EligibilityCheckService;
+// import com.example.demo.model.EligibilityCheckRecord;
+// import com.example.demo.service.EligibilityCheckService;
 
-@RestController
-@RequestMapping("/api/eligibility")
-public class EligibilityCheckController {
+// @RestController
+// @RequestMapping("/api/eligibility")
+// public class EligibilityCheckController {
 
-    private final EligibilityCheckService service;
+//     private final EligibilityCheckService service;
 
-    public EligibilityCheckController(EligibilityCheckService service) {
-        this.service = service;
-    }
+//     public EligibilityCheckController(EligibilityCheckService service) {
+//         this.service = service;
+//     }
 
-    // POST /api/eligibility/validate/{employeeId}/{deviceItemId}
-    @PostMapping("/validate/{employeeId}/{deviceItemId}")
-    public EligibilityCheckRecord validateEligibility(
-            @PathVariable Long employeeId,
-            @PathVariable Long deviceItemId) {
+//     // POST /api/eligibility/validate/{employeeId}/{deviceItemId}
+//     @PostMapping("/validate/{employeeId}/{deviceItemId}")
+//     public EligibilityCheckRecord validateEligibility(
+//             @PathVariable Long employeeId,
+//             @PathVariable Long deviceItemId) {
 
-        return service.validateEligibility(employeeId, deviceItemId);
-    }
+//         return service.validateEligibility(employeeId, deviceItemId);
+//     }
 
-    // GET /api/eligibility/employee/{employeeId}
-    @GetMapping("/employee/{employeeId}")
-    public List<EligibilityCheckRecord> getChecksByEmployee(
-            @PathVariable Long employeeId) {
+//     // GET /api/eligibility/employee/{employeeId}
+//     @GetMapping("/employee/{employeeId}")
+//     public List<EligibilityCheckRecord> getChecksByEmployee(
+//             @PathVariable Long employeeId) {
 
-        return service.getChecksByEmployee(employeeId);
-    }
+//         return service.getChecksByEmployee(employeeId);
+//     }
 
-    // GET /api/eligibility/{checkId}
-    @GetMapping("/{checkId}")
-    public EligibilityCheckRecord getCheckById(
-            @PathVariable Long checkId) {
+//     // GET /api/eligibility/{checkId}
+//     @GetMapping("/{checkId}")
+//     public EligibilityCheckRecord getCheckById(
+//             @PathVariable Long checkId) {
 
-        return service.getCheckById(checkId);
-    }
-}
+//         return service.getCheckById(checkId);
+//     }
+// }
