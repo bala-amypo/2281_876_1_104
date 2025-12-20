@@ -1,14 +1,13 @@
-// package com.example.demo.service;
+package com.example.demo.service;
 
-// import java.util.List;
+import java.util.List;
+import com.example.demo.model.EligibilityCheckRecord;
 
-// import com.example.demo.model.EligibilityCheckRecord;
+public interface EligibilityCheckService {
 
-// public interface EligibilityCheckService {
+    EligibilityCheckRecord validateEligibility(Long employeeId, Long deviceItemId);
 
-//     EligibilityCheckRecord validateEligibility(Long employeeId, Long deviceItemId);
+    List<EligibilityCheckRecord> getChecksByEmployee(Long employeeId);
 
-//     List<EligibilityCheckRecord> getChecksByEmployee(Long employeeId);
-
-//     EligibilityCheckRecord getCheckById(Long checkId);
-// }
+    EligibilityCheckRecord getCheckById(Long id);
+}

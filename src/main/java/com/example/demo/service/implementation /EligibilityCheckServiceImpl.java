@@ -1,128 +1,99 @@
-// package com.example.demo.service.implementation;
+@Service
+public class EligibilityCheckServiceImpl implements EligibilityCheckService {
 
-// import java.util.List;
+    private final EmployeeProfileRepository employeeRepo;
+    private final DeviceCatalogItemRepository deviceRepo;
+    private final IssuedDeviceRecordRepository issuedRepo;
+    private final PolicyRuleRepository policyRepo;
+    private final EligibilityCheckRecordRepository checkRepo;
 
-// import org.springframework.stereotype.Service;
+    public EligibilityCheckServiceImpl(
+            EmployeeProfileRepository employeeRepo,
+            DeviceCatalogItemRepository deviceRepo,
+            IssuedDeviceRecordRepository issuedRepo,
+            PolicyRuleRepository policyRepo,
+            EligibilityCheckRecordRepository checkRepo) {
 
-// import com.example.demo.exception.ResourceNotFoundException;
-// import com.example.demo.model.DeviceCatalogItem;
-// import com.example.demo.model.EmployeeProfile;
-// import com.example.demo.model.EligibilityCheckRecord;
-// import com.example.demo.model.PolicyRule;
-// import com.example.demo.repository.DeviceCatalogItemRepository;
-// import com.example.demo.repository.EmployeeProfileRepository;
-// import com.example.demo.repository.EligibilityCheckRecordRepository;
-// import com.example.demo.repository.IssuedDeviceRecordRepository;
-// import com.example.demo.repository.PolicyRuleRepository;
-// import com.example.demo.service.EligibilityCheckService;
+        this.employeeRepo = employeeRepo;
+        this.deviceRepo = deviceRepo;
+        this.issuedRepo = issuedRepo;
+        this.policyRepo = policyRepo;
+        this.checkRepo = checkRepo;
+    }
 
-// @Service
-// public class EligibilityCheckServiceImpl implements EligibilityCheckService {
+    @Override
+    public EligibilityCheckRecord validateEligibility(Long employeeId, Long deviceItemId) {
 
-//     private final EmployeeProfileRepository employeeRepo;
-//     private final DeviceCatalogItemRepository deviceRepo;
-//     private final IssuedDeviceRecordRepository issuedRepo;
-//     private final PolicyRuleRepository policyRepo;
-//     private final EligibilityCheckRecordRepository checkRepo;
+        boolean eligible = true;
+        String reason = "Eligible";
 
-//     public EligibilityCheckServiceImpl(
-//             EmployeeProfileRepository employeeRepo,
-//             DeviceCatalogItemRepository deviceRepo,
-//             IssuedDeviceRecordRepository issuedRepo,
-//             PolicyRuleRepository policyRepo,
-//             EligibilityCheckRecordRepository checkRepo) {
+        EmployeeProfile employee = employeeRepo.findById(employeeId)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found"));
 
-//         this.employeeRepo = employeeRepo;
-//         this.deviceRepo = deviceRepo;
-//         this.issuedRepo = issuedRepo;
-//         this.policyRepo = policyRepo;
-//         this.checkRepo = checkRepo;
-//     }
+        if (!employee.getActive()) {
+            eligible = false;
+            reason = "Employee is inactive";
+        }
 
-//     @Override
-//     public EligibilityCheckRecord validateEligibility(Long employeeId, Long deviceItemId) {
+        DeviceCatalogItem device = deviceRepo.findById(deviceItemId)
+                .orElseThrow(() -> new ResourceNotFoundException("Device not found"));
 
-//         boolean eligible = true;
-//         String reason = "Eligible";
+        if (eligible && !device.getActive()) {
+            eligible = false;
+            reason = "Device is inactive";
+        }
 
-//         // 1️⃣ Employee exists & active
-//         EmployeeProfile employee = employeeRepo.findById(employeeId)
-//                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found"));
+        if (eligible && issuedRepo.findActiveByEmployeeAndDevice(employeeId, deviceItemId) != null) {
+            eligible = false;
+            reason = "Device already issued to employee";
+        }
 
-//         if (!employee.getActive()) {
-//             eligible = false;
-//             reason = "Employee is inactive";
-//         }
+        if (eligible) {
+            long count = issuedRepo.countActiveDevicesForEmployee(employeeId);
+            if (count >= device.getMaxAllowedPerEmployee()) {
+                eligible = false;
+                reason = "Max allowed devices exceeded";
+            }
+        }
 
-//         // 2️⃣ Device exists & active
-//         DeviceCatalogItem device = deviceRepo.findById(deviceItemId)
-//                 .orElseThrow(() -> new ResourceNotFoundException("Device not found"));
+        if (eligible) {
+            for (PolicyRule rule : policyRepo.findByActiveTrue()) {
 
-//         if (eligible && !device.getActive()) {
-//             eligible = false;
-//             reason = "Device is inactive";
-//         }
+                boolean applies =
+                        (rule.getAppliesToRole() != null &&
+                         rule.getAppliesToRole().equals(employee.getJobRole()))
+                        ||
+                        (rule.getAppliesToDepartment() != null &&
+                         rule.getAppliesToDepartment().equals(employee.getDepartment()));
 
-//         // 3️⃣ No conflicting active issuance
-//         if (eligible && issuedRepo.findActiveByEmployeeAndDevice(employeeId, deviceItemId) != null) {
-//             eligible = false;
-//             reason = "Device already issued to employee";
-//         }
+                if (applies) {
+                    long count = issuedRepo.countActiveDevicesForEmployee(employeeId);
+                    if (count >= rule.getMaxDevicesAllowed()) {
+                        eligible = false;
+                        reason = "Policy violation: " + rule.getRuleCode();
+                        break;
+                    }
+                }
+            }
+        }
 
-//         // 4️⃣ Max devices per employee (device rule)
-//         if (eligible) {
-//             long activeCount = issuedRepo.countActiveDevicesForEmployee(employeeId);
+        EligibilityCheckRecord record = new EligibilityCheckRecord();
+        record.setEmployeeId(employeeId);
+        record.setDeviceItemId(deviceItemId);
+        record.setIsEligible(eligible);
+        record.setReason(reason);
 
-//             if (activeCount >= device.getMaxAllowedPerEmployee()) {
-//                 eligible = false;
-//                 reason = "Max allowed devices exceeded";
-//             }
-//         }
+        return checkRepo.save(record);
+    }
 
-//         // 5️⃣ Policy rules
-//         if (eligible) {
-//             List<PolicyRule> rules = policyRepo.findByActiveTrue();
+    @Override
+    public List<EligibilityCheckRecord> getChecksByEmployee(Long employeeId) {
+        return checkRepo.findByEmployeeId(employeeId);
+    }
 
-//             for (PolicyRule rule : rules) {
-
-//                 boolean applies =
-//                         (rule.getAppliesToRole() != null &&
-//                                 rule.getAppliesToRole().equals(employee.getJobRole()))
-//                         ||
-//                         (rule.getAppliesToDepartment() != null &&
-//                                 rule.getAppliesToDepartment().equals(employee.getDepartment()));
-
-//                 if (applies) {
-//                     long count = issuedRepo.countActiveDevicesForEmployee(employeeId);
-
-//                     if (count >= rule.getMaxDevicesAllowed()) {
-//                         eligible = false;
-//                         reason = "Policy violation: " + rule.getRuleCode();
-//                         break;
-//                     }
-//                 }
-//             }
-//         }
-
-//         // 6️⃣ Save eligibility check record
-//         EligibilityCheckRecord record = new EligibilityCheckRecord();
-//         record.setEmployeeId(employeeId);
-//         record.setDeviceItemId(deviceItemId);
-//         record.setIsEligible(eligible);
-//         record.setReason(reason);
-
-//         return checkRepo.save(record);
-//     }
-
-//     @Override
-//     public List<EligibilityCheckRecord> getChecksByEmployee(Long employeeId) {
-//         return checkRepo.findByEmployeeId(employeeId);
-//     }
-//     @Override
-//     public EligibilityCheckRecord getCheckById(Long checkId) {
-//         return checkRepo.findById(checkId)
-//             .orElseThrow(() ->
-//                 new ResourceNotFoundException("Eligibility check not found"));
-//     }
-
-// }
+    @Override
+    public EligibilityCheckRecord getCheckById(Long id) {
+        return checkRepo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Eligibility check not found"));
+    }
+}

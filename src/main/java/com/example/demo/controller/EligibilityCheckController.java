@@ -1,44 +1,28 @@
-// package com.example.demo.controller;
+@RestController
+@RequestMapping("/api/eligibility")
+public class EligibilityCheckController {
 
-// import java.util.List;
+    private final EligibilityCheckService service;
 
-// import org.springframework.web.bind.annotation.*;
+    public EligibilityCheckController(EligibilityCheckService service) {
+        this.service = service;
+    }
 
-// import com.example.demo.model.EligibilityCheckRecord;
-// import com.example.demo.service.EligibilityCheckService;
+    @PostMapping("/validate/{employeeId}/{deviceItemId}")
+    public EligibilityCheckRecord validate(
+            @PathVariable Long employeeId,
+            @PathVariable Long deviceItemId) {
 
-// @RestController
-// @RequestMapping("/api/eligibility")
-// public class EligibilityCheckController {
+        return service.validateEligibility(employeeId, deviceItemId);
+    }
 
-//     private final EligibilityCheckService service;
+    @GetMapping("/employee/{employeeId}")
+    public List<EligibilityCheckRecord> byEmployee(@PathVariable Long employeeId) {
+        return service.getChecksByEmployee(employeeId);
+    }
 
-//     public EligibilityCheckController(EligibilityCheckService service) {
-//         this.service = service;
-//     }
-
-//     // POST /api/eligibility/validate/{employeeId}/{deviceItemId}
-//     @PostMapping("/validate/{employeeId}/{deviceItemId}")
-//     public EligibilityCheckRecord validateEligibility(
-//             @PathVariable Long employeeId,
-//             @PathVariable Long deviceItemId) {
-
-//         return service.validateEligibility(employeeId, deviceItemId);
-//     }
-
-//     // GET /api/eligibility/employee/{employeeId}
-//     @GetMapping("/employee/{employeeId}")
-//     public List<EligibilityCheckRecord> getChecksByEmployee(
-//             @PathVariable Long employeeId) {
-
-//         return service.getChecksByEmployee(employeeId);
-//     }
-
-//     // GET /api/eligibility/{checkId}
-//     @GetMapping("/{checkId}")
-//     public EligibilityCheckRecord getCheckById(
-//             @PathVariable Long checkId) {
-
-//         return service.getCheckById(checkId);
-//     }
-// }
+    @GetMapping("/{id}")
+    public EligibilityCheckRecord getById(@PathVariable Long id) {
+        return service.getCheckById(id);
+    }
+}
