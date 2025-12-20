@@ -4,30 +4,35 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-
 import com.example.demo.model.IssuedDeviceRecord;
 
 public interface IssuedDeviceRecordRepository extends JpaRepository<IssuedDeviceRecord, Long> {
 
-    // Get all active (ISSUED) devices for an employee
+    // Find all records for an employee (all statuses)
+    List<IssuedDeviceRecord> findByEmployeeId(Long employeeId);
+
+    // Find all active (ISSUED) devices for an employee
     List<IssuedDeviceRecord> findByEmployeeIdAndStatus(Long employeeId, String status);
 
     // Check if a specific device is already issued and active
     Optional<IssuedDeviceRecord> findByEmployeeIdAndDeviceItemIdAndStatus(
-            Long employeeId,
-            Long deviceItemId,
-            String status
-    );
+            Long employeeId, Long deviceItemId, String status);
 
     // Count active (ISSUED) devices for employee
     long countByEmployeeIdAndStatus(Long employeeId, String status);
 
-    // Get all issued records by employee
-    List<IssuedDeviceRecord> findByEmployeeId(Long employeeId);
+    // Helper defaults for your test/service code
+    default List<IssuedDeviceRecord> findActiveByEmployeeAndDevice(Long employeeId, Long deviceItemId) {
+        return findByEmployeeIdAndDeviceItemIdAndStatus(employeeId, deviceItemId, "ISSUED")
+                .map(List::of)
+                .orElse(List.of());
+    }
 
-    // Get all records
-    List<IssuedDeviceRecord> findAll();
+    default Long countActiveDevicesForEmployee(Long employeeId) {
+        return countByEmployeeIdAndStatus(employeeId, "ISSUED");
+    }
 }
+
 
 
 //     // 🔴 CRITICAL: only ACTIVE (ISSUED) record
