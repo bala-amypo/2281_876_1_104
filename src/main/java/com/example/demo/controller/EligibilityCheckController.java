@@ -32,6 +32,6 @@ public class EligibilityCheckController {
 
     @GetMapping("/{id}")
     public EligibilityCheckRecord getById(@PathVariable Long id) {
-        return service.getCheckById(id);
+        return service.getById(id);
     }
 }
