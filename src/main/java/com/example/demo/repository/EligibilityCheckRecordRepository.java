@@ -1,12 +1,13 @@
-public interface IssuedDeviceRecordRepository
-        extends JpaRepository<IssuedDeviceRecord, Long> {
+package com.example.demo.repository;
 
-    List<IssuedDeviceRecord> findByEmployeeId(Long employeeId);
+import java.util.List;
 
-    IssuedDeviceRecord findByEmployeeIdAndDeviceItemIdAndActiveTrue(
-            Long employeeId,
-            Long deviceItemId
-    );
+import org.springframework.data.jpa.repository.JpaRepository;
 
-    long countByEmployeeIdAndActiveTrue(Long employeeId);
+import com.example.demo.model.EligibilityCheckRecord;
+
+public interface EligibilityCheckRecordRepository
+        extends JpaRepository<EligibilityCheckRecord, Long> {
+
+    List<EligibilityCheckRecord> findByEmployeeId(Long employeeId);
 }
