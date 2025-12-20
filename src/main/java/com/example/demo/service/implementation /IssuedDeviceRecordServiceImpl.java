@@ -1,6 +1,6 @@
 package com.example.demo.service.implementation;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -17,60 +17,72 @@ import com.example.demo.service.IssuedDeviceRecordService;
 @Service
 public class IssuedDeviceRecordServiceImpl implements IssuedDeviceRecordService {
 
-    private final IssuedDeviceRecordRepository repo;
+    private final IssuedDeviceRecordRepository issuedRepo;
     private final EmployeeProfileRepository employeeRepo;
     private final DeviceCatalogItemRepository deviceRepo;
 
     public IssuedDeviceRecordServiceImpl(
-            IssuedDeviceRecordRepository repo,
+            IssuedDeviceRecordRepository issuedRepo,
             EmployeeProfileRepository employeeRepo,
             DeviceCatalogItemRepository deviceRepo) {
-        this.repo = repo;
+
+        this.issuedRepo = issuedRepo;
         this.employeeRepo = employeeRepo;
         this.deviceRepo = deviceRepo;
     }
 
+    // ✅ Create issuance record
     @Override
     public IssuedDeviceRecord issueDevice(IssuedDeviceRecord record) {
 
-        // ✅ Validate employee exists
+        // 1️⃣ Validate employee exists
         EmployeeProfile employee = employeeRepo.findById(record.getEmployeeId())
-                .orElseThrow(() -> new ResourceNotFoundException("Employee not found"));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Employee not found"));
 
-        // ✅ Validate device exists
+        // 2️⃣ Validate device exists
         DeviceCatalogItem device = deviceRepo.findById(record.getDeviceItemId())
-                .orElseThrow(() -> new ResourceNotFoundException("Device not found"));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Device not found"));
 
-        record.setIssuedDate(LocalDateTime.now());
-        record.setStatus("ISSUED");
+        // 3️⃣ Set issued details
+        record.setIssuedDate(LocalDate.now());
+        record.setActive(true);
+        record.setReturnedDate(null);
 
-        return repo.save(record);
+        return issuedRepo.save(record);
     }
 
+    // ✅ Return device
     @Override
     public IssuedDeviceRecord returnDevice(Long recordId) {
 
-        IssuedDeviceRecord record = repo.findById(recordId)
-                .orElseThrow(() -> new ResourceNotFoundException("Issued record not found"));
+        IssuedDeviceRecord record = issuedRepo.findById(recordId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Issued record not found"));
 
-        if ("RETURNED".equals(record.getStatus())) {
-            throw new RuntimeException("Device already returned");
+        // Already returned check
+        if (!record.getActive()) {
+            throw new IllegalStateException("Device already returned");
         }
 
-        record.setStatus("RETURNED");
-        record.setReturnedDate(LocalDateTime.now());
+        record.setActive(false);
+        record.setReturnedDate(LocalDate.now());
 
-        return repo.save(record);
+        return issuedRepo.save(record);
     }
 
+    // ✅ Get issued devices by employee
     @Override
     public List<IssuedDeviceRecord> getIssuedDevicesByEmployee(Long employeeId) {
-        return repo.findByEmployeeId(employeeId);
+        return issuedRepo.findByEmployeeId(employeeId);
     }
 
+    // ✅ Get issued record by id
     @Override
-    public IssuedDeviceRecord getById(Long id) {
-        return repo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Issued record not found"));
+    public IssuedDeviceRecord getIssuedDeviceById(Long id) {
+        return issuedRepo.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Issued record not found"));
     }
 }
