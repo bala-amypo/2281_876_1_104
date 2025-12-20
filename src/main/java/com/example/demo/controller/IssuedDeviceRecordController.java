@@ -35,7 +35,7 @@ public class IssuedDeviceRecordController {
     @GetMapping("/employee/{employeeId}")
     public ResponseEntity<List<IssuedDeviceRecord>> getByEmployee(
             @PathVariable Long employeeId) {
-        return ResponseEntity.ok(service.getByEmployee(employeeId));
+        return ResponseEntity.ok(service.getByEmployeeId(employeeId));
     }
 
     // GET /api/issued-devices/{id}

@@ -35,3 +35,22 @@ public interface IssuedDeviceRecordRepository extends JpaRepository<IssuedDevice
 
 //     List<IssuedDeviceRecord> findByEmployeeId(Long employeeId);
 
+package com.example.demo.repository;
+
+import com.example.demo.model.IssuedDeviceRecord;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
+
+public interface IssuedDeviceRecordRepository
+        extends JpaRepository<IssuedDeviceRecord, Long> {
+
+    List<IssuedDeviceRecord> findByEmployeeId(Long employeeId);
+
+    IssuedDeviceRecord findByEmployeeIdAndDeviceItemIdAndActiveTrue(
+            Long employeeId,
+            Long deviceItemId
+    );
+
+    long countByEmployeeIdAndActiveTrue(Long employeeId);
+}
