@@ -10,16 +10,20 @@ import com.example.demo.model.IssuedDeviceRecord;
 public interface IssuedDeviceRecordRepository
         extends JpaRepository<IssuedDeviceRecord, Long> {
 
+    // Get all issued devices for an employee
     List<IssuedDeviceRecord> findByEmployeeId(Long employeeId);
 
+    // Check if a specific device is already issued and active
     Optional<IssuedDeviceRecord>
     findByEmployeeIdAndDeviceItemIdAndActiveTrue(
             Long employeeId,
             Long deviceItemId
     );
 
+    // Count active devices for employee
     long countByEmployeeIdAndActiveTrue(Long employeeId);
 }
+
 
 
 //     // 🔴 CRITICAL: only ACTIVE (ISSUED) record

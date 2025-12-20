@@ -47,7 +47,8 @@ public class EligibilityCheckServiceImpl implements EligibilityCheckService {
 
         // 1. Employee exists & active
         EmployeeProfile employee = employeeRepo.findById(employeeId)
-                .orElseThrow(() -> new ResourceNotFoundException("Employee not found"));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Employee not found"));
 
         if (!employee.getActive()) {
             eligible = false;
@@ -56,22 +57,28 @@ public class EligibilityCheckServiceImpl implements EligibilityCheckService {
 
         // 2. Device exists & active
         DeviceCatalogItem device = deviceRepo.findById(deviceItemId)
-                .orElseThrow(() -> new ResourceNotFoundException("Device not found"));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Device not found"));
 
         if (eligible && !device.getActive()) {
             eligible = false;
             reason = "Device is inactive";
         }
 
-        // 3. No active issuance exists
-        if (eligible && issuedRepo.findActiveByEmployeeAndDevice(employeeId, deviceItemId) != null) {
+        // 3. Check if device already issued (✅ FIXED METHOD)
+        if (eligible && issuedRepo
+                .findByEmployeeIdAndDeviceItemIdAndActiveTrue(employeeId, deviceItemId)
+                .isPresent()) {
+
             eligible = false;
             reason = "Device already issued to employee";
         }
 
-        // 4. Max allowed devices per employee
+        // 4. Max allowed devices per employee (✅ FIXED METHOD)
         if (eligible) {
-            long activeCount = issuedRepo.countActiveDevicesForEmployee(employeeId);
+            long activeCount =
+                    issuedRepo.countByEmployeeIdAndActiveTrue(employeeId);
+
             if (activeCount >= device.getMaxAllowedPerEmployee()) {
                 eligible = false;
                 reason = "Max allowed devices exceeded";
@@ -86,13 +93,15 @@ public class EligibilityCheckServiceImpl implements EligibilityCheckService {
 
                 boolean applies =
                         (rule.getAppliesToRole() != null &&
-                         rule.getAppliesToRole().equals(employee.getJobRole()))
-                        ||
+                                rule.getAppliesToRole().equals(employee.getJobRole()))
+                                ||
                         (rule.getAppliesToDepartment() != null &&
-                         rule.getAppliesToDepartment().equals(employee.getDepartment()));
+                                rule.getAppliesToDepartment().equals(employee.getDepartment()));
 
                 if (applies) {
-                    long count = issuedRepo.countActiveDevicesForEmployee(employeeId);
+                    long count =
+                            issuedRepo.countByEmployeeIdAndActiveTrue(employeeId);
+
                     if (count >= rule.getMaxDevicesAllowed()) {
                         eligible = false;
                         reason = "Policy violation: " + rule.getRuleCode();
@@ -120,7 +129,7 @@ public class EligibilityCheckServiceImpl implements EligibilityCheckService {
     @Override
     public EligibilityCheckRecord getById(Long id) {
         return checkRepo.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Eligibility check not found"));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Eligibility check not found"));
+    }
 }
-}
-
