@@ -1,6 +1,9 @@
 package com.example.demo.model;
 
 import jakarta.persistence.*;
+// import jakarta.persistence.PrePersist;
+
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -20,8 +23,10 @@ public class EligibilityCheckRecord {
 
     // Automatically set checkedAt before insert
     @PrePersist
-    public void setCheckedAt() {
-        this.checkedAt = LocalDateTime.now();
+    public void prePersist() {
+        if (this.createdAt == null) {
+            this.createdAt = LocalDateTime.now();
+        }
     }
 
     // No-argument constructor
