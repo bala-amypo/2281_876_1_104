@@ -43,77 +43,65 @@ public class EligibilityCheckServiceImpl implements EligibilityCheckService {
     @Override
     public EligibilityCheckRecord validateEligibility(Long employeeId, Long deviceItemId) {
 
-        EmployeeProfile employee = employeeRepo.findById(employeeId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Employee not found"));
+    EmployeeProfile employee = employeeRepo.findById(employeeId)
+            .orElseThrow(() -> new ResourceNotFoundException("Employee not found"));
 
-        DeviceCatalogItem device = deviceRepo.findById(deviceItemId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Device not found"));
+    if (!Boolean.TRUE.equals(employee.getActive())) {
+        throw new BadRequestException("not active");
+    }
 
-        EligibilityCheckRecord record = new EligibilityCheckRecord();
-        record.setEmployeeId(employeeId);
-        record.setDeviceItemId(deviceItemId);
+    DeviceCatalogItem device = deviceRepo.findById(deviceItemId)
+            .orElseThrow(() -> new ResourceNotFoundException("Device not found"));
 
-        // ❌ Employee not active
-        if (!employee.getActive()) {
-            record.setIsEligible(false);
-            record.setReason("not active");
-            checkRepo.save(record);
-            throw new BadRequestException("not active");
+    if (!Boolean.TRUE.equals(device.getActive())) {
+        throw new BadRequestException("inactive");
+    }
+
+    // already issued same device
+    if (!issuedRepo.findByEmployeeIdAndDeviceItemIdAndStatus(
+            employeeId, deviceItemId, "ISSUED").isEmpty()) {
+        throw new BadRequestException("already assigned");
+    }
+
+    // device-level max
+    Integer maxAllowed = device.getMaxAllowedPerEmployee();
+    if (maxAllowed != null) {
+        long activeCount = issuedRepo.countByEmployeeIdAndStatus(employeeId, "ISSUED");
+        if (activeCount >= maxAllowed) {
+            return saveResult(employeeId, deviceItemId, false, "device limit");
         }
+    }
 
-        // ❌ Device inactive
-        if (!device.getActive()) {
-            record.setIsEligible(false);
-            record.setReason("inactive");
-            checkRepo.save(record);
-            throw new BadRequestException("inactive");
-        }
+    // policy rules
+    List<PolicyRule> rules = policyRuleRepo.findActiveRules();
+    for (PolicyRule rule : rules) {
 
-        // ❌ Active issuance exists
-        long activeIssued =
-                issuedRepo.countByEmployeeIdAndStatus(employeeId, "ISSUED");
+        boolean applies =
+                (rule.getAppliesToDepartment() == null ||
+                        rule.getAppliesToDepartment().equals(employee.getDepartment())) &&
+                (rule.getAppliesToRole() == null ||
+                        rule.getAppliesToRole().equals(employee.getJobRole()));
 
-        if (activeIssued > 0) {
-            record.setIsEligible(false);
-            record.setReason("active issuance");
-            checkRepo.save(record);
-            throw new BadRequestException("active issuance");
-        }
-
-        // ❌ Max devices reached
-        if (activeIssued >= device.getMaxAllowedPerEmployee()) {
-            record.setIsEligible(false);
-            record.setReason("Maximum allowed devices");
-            checkRepo.save(record);
-            throw new BadRequestException("Maximum allowed devices");
-        }
-
-        // ❌ Policy rule violation
-        List<PolicyRule> rules = policyRepo.findByActiveTrue();
-        for (PolicyRule rule : rules) {
-
-            boolean applies =
-                    (rule.getAppliesToRole() != null &&
-                     rule.getAppliesToRole().equals(employee.getJobRole()))
-                    ||
-                    (rule.getAppliesToDepartment() != null &&
-                     rule.getAppliesToDepartment().equals(employee.getDepartment()));
-
-            if (applies && activeIssued >= rule.getMaxDevicesAllowed()) {
-                record.setIsEligible(false);
-                record.setReason("Policy violation");
-                checkRepo.save(record);
-                throw new BadRequestException("Policy violation");
+        if (applies && rule.getMaxDevicesAllowed() != null) {
+            long issuedCount = issuedRepo.countByEmployeeIdAndStatus(employeeId, "ISSUED");
+            if (issuedCount >= rule.getMaxDevicesAllowed()) {
+                return saveResult(employeeId, deviceItemId, false, "Policy violation");
             }
         }
-
-        // ✅ Eligible
-        record.setIsEligible(true);
-        record.setReason("Eligible");
-        return checkRepo.save(record);
     }
+
+    return saveResult(employeeId, deviceItemId, true, "Eligible");
+    }
+
+    private EligibilityCheckRecord saveResult(Long empId, Long devId, boolean eligible, String reason) {
+    EligibilityCheckRecord r = new EligibilityCheckRecord();
+    r.setEmployeeId(empId);
+    r.setDeviceItemId(devId);
+    r.setEligible(eligible);
+    r.setReason(reason);
+    return eligibilityRepo.save(r);
+    }
+
 
     @Override
     public List<EligibilityCheckRecord> getChecksByEmployee(Long employeeId) {
