@@ -2,8 +2,6 @@ package com.example.demo.controller;
 
 import java.util.List;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.example.demo.model.PolicyRule;
@@ -13,43 +11,36 @@ import com.example.demo.service.PolicyRuleService;
 @RequestMapping("/api/policy-rules")
 public class PolicyRuleController {
 
-    private final PolicyRuleService policyRuleService;
+    private final PolicyRuleService service;
 
-    public PolicyRuleController(PolicyRuleService policyRuleService) {
-        this.policyRuleService = policyRuleService;
+    public PolicyRuleController(PolicyRuleService service) {
+        this.service = service;
     }
 
-    // POST /
     @PostMapping
-    public ResponseEntity<PolicyRule> createRule(@RequestBody PolicyRule rule) {
-        return new ResponseEntity<>(policyRuleService.createRule(rule), HttpStatus.CREATED);
+    public PolicyRule createRule(@RequestBody PolicyRule rule) {
+        return service.createRule(rule);
     }
 
-    // GET /
     @GetMapping
     public List<PolicyRule> getAllRules() {
-        return policyRuleService.getAllRules();
+        return service.getAllRules();
     }
 
-    // GET /active
     @GetMapping("/active")
     public List<PolicyRule> getActiveRules() {
-        return policyRuleService.getActiveRules();
+        return service.getActiveRules();
     }
 
-    // PUT /{id}/active
     @PutMapping("/{id}/active")
     public PolicyRule updateActiveStatus(
             @PathVariable Long id,
             @RequestParam boolean active) {
-
-        return policyRuleService.updateRuleActive(id, active);
+        return service.updateRuleActive(id, active);
     }
 
-    // DELETE /{id}
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteRule(@PathVariable Long id) {
-        policyRuleService.deleteRule(id);
-        return ResponseEntity.noContent().build();
+    public void deleteRule(@PathVariable Long id) {
+        service.deleteRule(id);
     }
 }
