@@ -1,11 +1,9 @@
-
 package com.example.demo.service.impl;
 
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.example.demo.dto.DeviceDto;
 import com.example.demo.exception.BadRequestException;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.model.DeviceCatalogItem;
@@ -22,25 +20,23 @@ public class DeviceCatalogServiceImpl implements DeviceCatalogService {
     }
 
     @Override
-    public DeviceCatalogItem createItem(DeviceDto dto) {
+    public DeviceCatalogItem createItem(DeviceCatalogItem item) {
 
-        // ✅ Validate maxAllowedPerEmployee
-        if (dto.getMaxAllowedPerEmployee() == null ||
-            dto.getMaxAllowedPerEmployee() <= 0) {
+        // ✅ Invalid max limit
+        if (item.getMaxAllowedPerEmployee() == null ||
+            item.getMaxAllowedPerEmployee() <= 0) {
             throw new BadRequestException("maxAllowedPerEmployee");
         }
 
-        // ✅ Validate duplicate device code
-        if (repo.findByDeviceCode(dto.getDeviceCode()).isPresent()) {
+        // ✅ Duplicate device code
+        if (repo.findByDeviceCode(item.getDeviceCode()).isPresent()) {
             throw new BadRequestException("Device code already exists");
         }
 
-        DeviceCatalogItem item = new DeviceCatalogItem();
-        item.setDeviceCode(dto.getDeviceCode());
-        item.setDeviceType(dto.getDeviceType());
-        item.setModel(dto.getModel());
-        item.setMaxAllowedPerEmployee(dto.getMaxAllowedPerEmployee());
-        item.setActive(dto.getActive() != null ? dto.getActive() : true);
+        // default active = true
+        if (item.getActive() == null) {
+            item.setActive(true);
+        }
 
         return repo.save(item);
     }
