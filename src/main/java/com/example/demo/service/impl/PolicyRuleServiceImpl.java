@@ -33,10 +33,10 @@ public class PolicyRuleServiceImpl implements PolicyRuleService {
         }
 
         // ✅ maxDevicesAllowed validation
-        if (rule.getMaxDevicesAllowed() == null ||
-            rule.getMaxDevicesAllowed() <= 0) {
+        if (rule.getMaxDevicesAllowed() != null && rule.getMaxDevicesAllowed() <= 0) {
             throw new BadRequestException("maxDevicesAllowed");
         }
+
 
         // ✅ default active
         if (rule.getActive() == null) {
