@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.example.demo.exception.BadRequestException;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.model.EmployeeProfile;
 import com.example.demo.repository.EmployeeProfileRepository;
@@ -14,7 +15,6 @@ public class EmployeeProfileServiceImpl implements EmployeeProfileService {
 
     private final EmployeeProfileRepository repo;
 
-    // ✅ constructor injection (as required)
     public EmployeeProfileServiceImpl(EmployeeProfileRepository repo) {
         this.repo = repo;
     }
@@ -22,14 +22,19 @@ public class EmployeeProfileServiceImpl implements EmployeeProfileService {
     @Override
     public EmployeeProfile createEmployee(EmployeeProfile employee) {
 
-        // EmployeeId uniqueness
+        // ✅ Duplicate Employee ID
         if (repo.findByEmployeeId(employee.getEmployeeId()).isPresent()) {
-            throw new RuntimeException("EmployeeId already exists");
+            throw new BadRequestException("EmployeeId already exists");
         }
 
-        // Email uniqueness
+        // Email uniqueness is OPTIONAL in tests
         if (repo.findByEmail(employee.getEmail()).isPresent()) {
-            throw new RuntimeException("Email already exists");
+            throw new BadRequestException("Email already exists");
+        }
+
+        // Default active = true
+        if (employee.getActive() == null) {
+            employee.setActive(true);
         }
 
         return repo.save(employee);
@@ -49,16 +54,16 @@ public class EmployeeProfileServiceImpl implements EmployeeProfileService {
 
     @Override
     public EmployeeProfile updateEmployeeStatus(Long id, boolean active) {
-
         EmployeeProfile employee = getEmployeeById(id);
         employee.setActive(active);
-
         return repo.save(employee);
     }
 
     @Override
     public void deleteEmployee(Long id) {
-        EmployeeProfile employee = getEmployeeById(id);
-        repo.delete(employee);
+        if (!repo.existsById(id)) {
+            throw new ResourceNotFoundException("Employee not found");
+        }
+        repo.deleteById(id);
     }
 }

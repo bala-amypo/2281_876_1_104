@@ -2,7 +2,6 @@ package com.example.demo.controller;
 
 import java.util.List;
 
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.example.demo.model.EmployeeProfile;
@@ -18,41 +17,36 @@ public class EmployeeProfileController {
         this.service = service;
     }
 
-    // POST /
+    // POST /api/employees
     @PostMapping
-    public ResponseEntity<EmployeeProfile> createEmployee(
+    public EmployeeProfile createEmployee(
             @RequestBody EmployeeProfile employee) {
-
-        return ResponseEntity.ok(service.createEmployee(employee));
+        return service.createEmployee(employee);
     }
 
-    // GET /
+    // GET /api/employees
     @GetMapping
-    public ResponseEntity<List<EmployeeProfile>> getAllEmployees() {
-        return ResponseEntity.ok(service.getAllEmployees());
+    public List<EmployeeProfile> getAllEmployees() {
+        return service.getAllEmployees();
     }
 
-    // GET /{id}
+    // GET /api/employees/{id}
     @GetMapping("/{id}")
-    public ResponseEntity<EmployeeProfile> getEmployeeById(
-            @PathVariable Long id) {
-
-        return ResponseEntity.ok(service.getEmployeeById(id));
+    public EmployeeProfile getEmployeeById(@PathVariable Long id) {
+        return service.getEmployeeById(id);
     }
 
-    // PUT /{id}/status
+    // PUT /api/employees/{id}/status?active=true
     @PutMapping("/{id}/status")
-    public ResponseEntity<EmployeeProfile> updateStatus(
+    public EmployeeProfile updateStatus(
             @PathVariable Long id,
             @RequestParam boolean active) {
-
-        return ResponseEntity.ok(service.updateEmployeeStatus(id, active));
+        return service.updateEmployeeStatus(id, active);
     }
 
-    // DELETE /{id}
+    // DELETE /api/employees/{id}
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteEmployee(@PathVariable Long id) {
+    public void deleteEmployee(@PathVariable Long id) {
         service.deleteEmployee(id);
-        return ResponseEntity.ok("Employee deleted successfully");
     }
 }
