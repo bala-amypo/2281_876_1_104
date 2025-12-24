@@ -1,42 +1,18 @@
-package com.example.demo.repository;
+package com.example.demo.service;
 
-import java.util.Optional;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import java.util.List;
 
 import com.example.demo.model.IssuedDeviceRecord;
 
-@Repository
-public interface IssuedDeviceRecordRepository
-        extends JpaRepository<IssuedDeviceRecord, Long> {
+public interface IssuedDeviceRecordService {
 
-    // ✔ Used for "Active assignment already exists" test
-    boolean existsByEmployeeIdAndDeviceItemIdAndStatus(
-            Long employeeId,
-            Long deviceItemId,
-            String status
-    );
+    IssuedDeviceRecord issueDevice(Long employeeId, Long deviceItemId);
 
-    // ✔ Used for device-level max allowed test
-    long countByEmployeeIdAndDeviceItemIdAndStatus(
-            Long employeeId,
-            Long deviceItemId,
-            String status
-    );
+    IssuedDeviceRecord returnDevice(Long issuedDeviceRecordId);
 
-    // ✔ Used for policy-rule checks
-    long countByEmployeeIdAndStatus(
-            Long employeeId,
-            String status
-    );
+    IssuedDeviceRecord getById(Long id);
 
-    // (Optional but usually required by other tests)
-    Optional<IssuedDeviceRecord> findByEmployeeIdAndDeviceItemIdAndStatus(
-            Long employeeId,
-            Long deviceItemId,
-            String status
-    );
+    List<IssuedDeviceRecord> getAll();
+
+    List<IssuedDeviceRecord> getByEmployee(Long employeeId);
 }
-
-
