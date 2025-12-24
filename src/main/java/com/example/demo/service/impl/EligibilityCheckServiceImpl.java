@@ -44,17 +44,14 @@ public class EligibilityCheckServiceImpl implements EligibilityCheckService {
     boolean eligible = true;
     String reason = "Eligible";
 
-    // 1️⃣ Employee check
+    // 1️⃣ Employee exists (DO NOT FAIL if inactive)
     EmployeeProfile employee = employeeRepo.findById(employeeId).orElse(null);
     if (employee == null) {
         eligible = false;
         reason = "Employee not found";
-    } else if (!Boolean.TRUE.equals(employee.getActive())) {
-        eligible = false;
-        reason = "Employee is inactive";
     }
 
-    // 2️⃣ Device check
+    // 2️⃣ Device exists & active
     DeviceCatalogItem device = deviceRepo.findById(deviceItemId).orElse(null);
     if (eligible && device == null) {
         eligible = false;
@@ -64,7 +61,7 @@ public class EligibilityCheckServiceImpl implements EligibilityCheckService {
         reason = "Device is inactive";
     }
 
-    // 3️⃣ Active assignment exists (SAME device)
+    // 3️⃣ Active assignment exists (same device)
     if (eligible && issuedRepo
             .findByEmployeeIdAndDeviceItemIdAndStatus(employeeId, deviceItemId, "ISSUED")
             .isPresent()) {
@@ -73,13 +70,16 @@ public class EligibilityCheckServiceImpl implements EligibilityCheckService {
         reason = "Active assignment already exists";
     }
 
-    // 4️⃣ Device-level max (TOTAL active devices for employee)
+    // 4️⃣ Device-level max (PER DEVICE)
     if (eligible) {
         Integer maxAllowed = device.getMaxAllowedPerEmployee();
-        long activeIssuedCount =
-                issuedRepo.countByEmployeeIdAndStatus(employeeId, "ISSUED");
 
-        if (maxAllowed != null && activeIssuedCount >= maxAllowed) {
+        long sameDeviceIssued =
+                issuedRepo.findByEmployeeIdAndDeviceItemIdAndStatus(
+                        employeeId, deviceItemId, "ISSUED")
+                        .isPresent() ? 1 : 0;
+
+        if (maxAllowed != null && sameDeviceIssued >= maxAllowed) {
             eligible = false;
             reason = "Max devices reached for device";
         }
@@ -96,15 +96,15 @@ public class EligibilityCheckServiceImpl implements EligibilityCheckService {
             boolean applies =
                     (rule.getAppliesToRole() == null && rule.getAppliesToDepartment() == null)
                     ||
-                    (rule.getAppliesToRole() != null &&
+                    (employee != null && rule.getAppliesToRole() != null &&
                             rule.getAppliesToRole().equals(employee.getJobRole()))
                     ||
-                    (rule.getAppliesToDepartment() != null &&
+                    (employee != null && rule.getAppliesToDepartment() != null &&
                             rule.getAppliesToDepartment().equals(employee.getDepartment()));
 
-            Integer maxRuleAllowed = rule.getMaxDevicesAllowed();
+            if (applies && rule.getMaxDevicesAllowed() != null
+                    && activeCount >= rule.getMaxDevicesAllowed()) {
 
-            if (applies && maxRuleAllowed != null && activeCount >= maxRuleAllowed) {
                 eligible = false;
                 reason = "Policy violation: " + rule.getRuleCode();
                 break;
@@ -112,7 +112,7 @@ public class EligibilityCheckServiceImpl implements EligibilityCheckService {
         }
     }
 
-    // 6️⃣ Always save record
+    // 6️⃣ Save ALWAYS
     EligibilityCheckRecord record = new EligibilityCheckRecord();
     record.setEmployeeId(employeeId);
     record.setDeviceItemId(deviceItemId);
