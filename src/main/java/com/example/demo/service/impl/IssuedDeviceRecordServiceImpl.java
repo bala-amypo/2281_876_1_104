@@ -32,6 +32,7 @@ public class IssuedDeviceRecordServiceImpl implements IssuedDeviceRecordService 
         this.deviceRepo = deviceRepo;
     }
 
+    // ✅ MATCHES INTERFACE
     @Override
     public IssuedDeviceRecord issueDevice(IssuedDeviceRecord record) {
 
@@ -39,24 +40,16 @@ public class IssuedDeviceRecordServiceImpl implements IssuedDeviceRecordService 
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Employee not found"));
 
-        if (!employee.getActive()) {
-            throw new BadRequestException("not active");
+        if (!Boolean.TRUE.equals(employee.getActive())) {
+            throw new BadRequestException("Employee is inactive");
         }
 
         DeviceCatalogItem device = deviceRepo.findById(record.getDeviceItemId())
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Device not found"));
 
-        if (!device.getActive()) {
-            throw new BadRequestException("inactive");
-        }
-
-        // ❌ Any active issuance exists
-        long activeIssued =
-                issuedRepo.countByEmployeeIdAndStatus(record.getEmployeeId(), "ISSUED");
-
-        if (activeIssued > 0) {
-            throw new BadRequestException("active issuance");
+        if (!Boolean.TRUE.equals(device.getActive())) {
+            throw new BadRequestException("Device is inactive");
         }
 
         record.setIssuedDate(LocalDate.now());
@@ -66,15 +59,16 @@ public class IssuedDeviceRecordServiceImpl implements IssuedDeviceRecordService 
         return issuedRepo.save(record);
     }
 
+    // ✅ MATCHES INTERFACE
     @Override
-    public IssuedDeviceRecord returnDevice(Long recordId) {
+    public IssuedDeviceRecord returnDevice(Long issuedDeviceRecordId) {
 
-        IssuedDeviceRecord record = issuedRepo.findById(recordId)
+        IssuedDeviceRecord record = issuedRepo.findById(issuedDeviceRecordId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Issued record not found"));
 
         if ("RETURNED".equals(record.getStatus())) {
-            throw new BadRequestException("already returned");
+            throw new BadRequestException("Device already returned");
         }
 
         record.setStatus("RETURNED");
@@ -83,16 +77,7 @@ public class IssuedDeviceRecordServiceImpl implements IssuedDeviceRecordService 
         return issuedRepo.save(record);
     }
 
-    @Override
-    public List<IssuedDeviceRecord> getByEmployeeId(Long employeeId) {
-        return issuedRepo.findByEmployeeId(employeeId);
-    }
-
-    @Override
-    public List<IssuedDeviceRecord> getActiveByEmployeeId(Long employeeId) {
-        return issuedRepo.findByEmployeeIdAndStatus(employeeId, "ISSUED");
-    }
-
+    // ✅ MATCHES INTERFACE
     @Override
     public IssuedDeviceRecord getById(Long id) {
         return issuedRepo.findById(id)
@@ -100,8 +85,21 @@ public class IssuedDeviceRecordServiceImpl implements IssuedDeviceRecordService 
                         new ResourceNotFoundException("Issued record not found"));
     }
 
+    // ✅ MATCHES INTERFACE
     @Override
-    public long countActiveDevicesForEmployee(Long employeeId) {
-        return issuedRepo.countByEmployeeIdAndStatus(employeeId, "ISSUED");
+    public List<IssuedDeviceRecord> getAll() {
+        return issuedRepo.findAll();
+    }
+
+    // ✅ MATCHES INTERFACE
+    @Override
+    public List<IssuedDeviceRecord> getByEmployeeId(Long employeeId) {
+        return issuedRepo.findByEmployeeId(employeeId);
+    }
+
+    // ✅ MATCHES INTERFACE
+    @Override
+    public List<IssuedDeviceRecord> getByEmployeeIdAndStatus(Long employeeId, String status) {
+        return issuedRepo.findByEmployeeIdAndStatus(employeeId, status);
     }
 }
