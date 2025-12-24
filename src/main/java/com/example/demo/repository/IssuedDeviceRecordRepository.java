@@ -33,4 +33,8 @@ public interface IssuedDeviceRecordRepository
             Long deviceItemId,
             String status
     );
+    List<IssuedDeviceRecord> findByEmployeeId(Long employeeId);
+
+List<IssuedDeviceRecord> findByEmployeeIdAndStatus(Long employeeId, String status);
+
 }

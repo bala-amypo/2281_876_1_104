@@ -6,7 +6,7 @@ import com.example.demo.model.IssuedDeviceRecord;
 
 public interface IssuedDeviceRecordService {
 
-    IssuedDeviceRecord issueDevice(Long employeeId, Long deviceItemId);
+    IssuedDeviceRecord issueDevice(IssuedDeviceRecord record);
 
     IssuedDeviceRecord returnDevice(Long issuedDeviceRecordId);
 
@@ -14,5 +14,7 @@ public interface IssuedDeviceRecordService {
 
     List<IssuedDeviceRecord> getAll();
 
-    List<IssuedDeviceRecord> getByEmployee(Long employeeId);
+    List<IssuedDeviceRecord> getByEmployeeId(Long employeeId);
+
+    List<IssuedDeviceRecord> getByEmployeeIdAndStatus(Long employeeId, String status);
 }
