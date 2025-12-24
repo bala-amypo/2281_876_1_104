@@ -38,56 +38,57 @@ public class EligibilityCheckServiceImpl implements EligibilityCheckService {
         this.policyRepo = policyRepo;
         this.checkRepo = checkRepo;
     }
-
     @Override
     public EligibilityCheckRecord validateEligibility(Long employeeId, Long deviceItemId) {
 
-    boolean isEligible = false; // false = eligible, true = violation
+    boolean eligible = true;
     String reason = "Eligible";
 
+    // 1️⃣ Employee check
     EmployeeProfile employee = employeeRepo.findById(employeeId).orElse(null);
     if (employee == null) {
-        isEligible = true;
+        eligible = false;
         reason = "Employee not found";
     } else if (!Boolean.TRUE.equals(employee.getActive())) {
-        isEligible = true;
+        eligible = false;
         reason = "Employee is inactive";
     }
 
+    // 2️⃣ Device check
     DeviceCatalogItem device = deviceRepo.findById(deviceItemId).orElse(null);
-    if (!isEligible && device == null) {
-        isEligible = true;
+    if (eligible && device == null) {
+        eligible = false;
         reason = "Device not found";
-    } else if (!isEligible && !Boolean.TRUE.equals(device.getActive())) {
-        isEligible = true;
+    } else if (eligible && !Boolean.TRUE.equals(device.getActive())) {
+        eligible = false;
         reason = "Device is inactive";
     }
 
-    // ❌ Active assignment exists (same device)
-    if (!isEligible && issuedRepo
-            .existsByEmployeeIdAndDeviceItemIdAndStatus(employeeId, deviceItemId, "ISSUED")) {
+    // 3️⃣ Active assignment exists (SAME device)
+    if (eligible && issuedRepo
+            .findByEmployeeIdAndDeviceItemIdAndStatus(employeeId, deviceItemId, "ISSUED")
+            .isPresent()) {
 
-        isEligible = true;
+        eligible = false;
         reason = "Active assignment already exists";
     }
 
-    // ❌ Device-level max
-    if (!isEligible) {
+    // 4️⃣ Device-level max (TOTAL active devices for employee)
+    if (eligible) {
         Integer maxAllowed = device.getMaxAllowedPerEmployee();
-        long activeIssued =
-                issuedRepo.countByEmployeeIdAndDeviceItemIdAndStatus(
-                        employeeId, deviceItemId, "ISSUED");
+        long activeIssuedCount =
+                issuedRepo.countByEmployeeIdAndStatus(employeeId, "ISSUED");
 
-        if (maxAllowed != null && activeIssued >= maxAllowed) {
-            isEligible = true;
+        if (maxAllowed != null && activeIssuedCount >= maxAllowed) {
+            eligible = false;
             reason = "Max devices reached for device";
         }
     }
 
-    // ❌ Policy rules
-    if (!isEligible) {
+    // 5️⃣ Policy rules
+    if (eligible) {
         List<PolicyRule> rules = policyRepo.findByActiveTrue();
-        long totalActive =
+        long activeCount =
                 issuedRepo.countByEmployeeIdAndStatus(employeeId, "ISSUED");
 
         for (PolicyRule rule : rules) {
@@ -101,24 +102,26 @@ public class EligibilityCheckServiceImpl implements EligibilityCheckService {
                     (rule.getAppliesToDepartment() != null &&
                             rule.getAppliesToDepartment().equals(employee.getDepartment()));
 
-            if (applies && rule.getMaxDevicesAllowed() != null
-                    && totalActive >= rule.getMaxDevicesAllowed()) {
+            Integer maxRuleAllowed = rule.getMaxDevicesAllowed();
 
-                isEligible = true;
+            if (applies && maxRuleAllowed != null && activeCount >= maxRuleAllowed) {
+                eligible = false;
                 reason = "Policy violation: " + rule.getRuleCode();
                 break;
             }
         }
     }
 
+    // 6️⃣ Always save record
     EligibilityCheckRecord record = new EligibilityCheckRecord();
     record.setEmployeeId(employeeId);
     record.setDeviceItemId(deviceItemId);
-    record.setIsEligible(isEligible);
+    record.setIsEligible(eligible);
     record.setReason(reason);
 
     return checkRepo.save(record);
     }
+
 
     @Override
     public List<EligibilityCheckRecord> getChecksByEmployee(Long employeeId) {
