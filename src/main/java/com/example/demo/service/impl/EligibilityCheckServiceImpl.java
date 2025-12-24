@@ -44,14 +44,14 @@ public class EligibilityCheckServiceImpl implements EligibilityCheckService {
     boolean eligible = true;
     String reason = "Eligible";
 
-    // 1️⃣ Employee exists (DO NOT FAIL if inactive)
+    
     EmployeeProfile employee = employeeRepo.findById(employeeId).orElse(null);
     if (employee == null) {
         eligible = false;
         reason = "Employee not found";
     }
 
-    // 2️⃣ Device exists & active
+    
     DeviceCatalogItem device = deviceRepo.findById(deviceItemId).orElse(null);
     if (eligible && device == null) {
         eligible = false;
@@ -61,7 +61,7 @@ public class EligibilityCheckServiceImpl implements EligibilityCheckService {
         reason = "Device is inactive";
     }
 
-    // 3️⃣ Active assignment exists (same device)
+    
     if (eligible && issuedRepo
             .findByEmployeeIdAndDeviceItemIdAndStatus(employeeId, deviceItemId, "ISSUED")
             .isPresent()) {
@@ -70,7 +70,7 @@ public class EligibilityCheckServiceImpl implements EligibilityCheckService {
         reason = "Active assignment already exists";
     }
 
-    // 4️⃣ Device-level max (PER DEVICE)
+    
     if (eligible) {
         Integer maxAllowed = device.getMaxAllowedPerEmployee();
 
@@ -85,7 +85,7 @@ public class EligibilityCheckServiceImpl implements EligibilityCheckService {
         }
     }
 
-    // 5️⃣ Policy rules
+    
     if (eligible) {
         List<PolicyRule> rules = policyRepo.findByActiveTrue();
         long activeCount =
@@ -112,7 +112,7 @@ public class EligibilityCheckServiceImpl implements EligibilityCheckService {
         }
     }
 
-    // 6️⃣ Save ALWAYS
+    
     EligibilityCheckRecord record = new EligibilityCheckRecord();
     record.setEmployeeId(employeeId);
     record.setDeviceItemId(deviceItemId);
