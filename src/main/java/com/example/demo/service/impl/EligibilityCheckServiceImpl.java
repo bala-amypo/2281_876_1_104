@@ -32,7 +32,7 @@ public class EligibilityCheckServiceImpl implements EligibilityCheckService {
             DeviceCatalogItemRepository deviceRepo,
             IssuedDeviceRecordRepository issuedRepo,
             PolicyRuleRepository policyRepo,
-            EligibilityCheckRecordRepository checkRepo) {
+            EligibilityCheckRecordRepository eligibilityRepo) {
 
         this.employeeRepo = employeeRepo;
         this.deviceRepo = deviceRepo;
