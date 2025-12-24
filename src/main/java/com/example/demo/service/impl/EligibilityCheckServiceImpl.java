@@ -23,7 +23,9 @@ public class EligibilityCheckServiceImpl implements EligibilityCheckService {
     private final DeviceCatalogItemRepository deviceRepo;
     private final IssuedDeviceRecordRepository issuedRepo;
     private final PolicyRuleRepository policyRepo;
-    private final EligibilityCheckRecordRepository checkRepo;
+    
+    private final EligibilityCheckRecordRepository eligibilityRepo;
+
 
     public EligibilityCheckServiceImpl(
             EmployeeProfileRepository employeeRepo,
@@ -36,7 +38,7 @@ public class EligibilityCheckServiceImpl implements EligibilityCheckService {
         this.deviceRepo = deviceRepo;
         this.issuedRepo = issuedRepo;
         this.policyRepo = policyRepo;
-        this.checkRepo = checkRepo;
+        this.eligibilityRepo = eligibilityRepo;
     }
     @Override
     public EligibilityCheckRecord validateEligibility(Long employeeId, Long deviceItemId) {
@@ -107,12 +109,12 @@ public class EligibilityCheckServiceImpl implements EligibilityCheckService {
 
     @Override
     public List<EligibilityCheckRecord> getChecksByEmployee(Long employeeId) {
-        return checkRepo.findByEmployeeId(employeeId);
+        return eligibilityRepo.findByEmployeeId(employeeId);
     }
 
     @Override
     public EligibilityCheckRecord getById(Long id) {
-        return checkRepo.findById(id)
+        return eligibilityRepo.findById(id)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Eligibility check not found"));
     }
