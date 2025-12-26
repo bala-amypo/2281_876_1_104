@@ -1,14 +1,10 @@
 package com.example.demo.security;
 
 import java.util.Date;
-
 import org.springframework.stereotype.Component;
-
 import com.example.demo.model.UserAccount;
-
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
-
 import javax.crypto.SecretKey;
 
 @Component
@@ -17,26 +13,24 @@ public class JwtTokenProvider {
     private final SecretKey key;
     private final long validityInMs;
 
-    // ✅ REQUIRED BY TESTS
+    // 🔥 REQUIRED BY TESTS
     public JwtTokenProvider(String secret, long validityInMs) {
         this.key = Keys.hmacShaKeyFor(secret.getBytes());
         this.validityInMs = validityInMs;
     }
 
-    // ✅ REQUIRED BY SPRING (default bean)
+    // 🔥 REQUIRED BY SPRING
     public JwtTokenProvider() {
         String secret =
             "sdjhgbwubwwbgwiub8QFQ8qg87G1bfewifbiuwg7iu8wefqhjk";
         this.key = Keys.hmacShaKeyFor(secret.getBytes());
-        this.validityInMs = 10 * 60 * 1000; // 10 minutes
+        this.validityInMs = 10 * 60 * 1000;
     }
 
-    // ✅ REQUIRED BY TESTS
     public String generateToken(UserAccount user) {
         return generateToken(user.getEmail(), user.getRole());
     }
 
-    // Internal use
     public String generateToken(String email, String role) {
         Date now = new Date();
         Date expiry = new Date(now.getTime() + validityInMs);
@@ -50,7 +44,6 @@ public class JwtTokenProvider {
                 .compact();
     }
 
-    // ✅ REQUIRED BY TESTS
     public String getUsername(String token) {
         return getEmailFromToken(token);
     }
