@@ -20,7 +20,7 @@ public class DeviceCatalogController {
 
     // POST /api/devices
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN','IT_OPERATOR')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public DeviceCatalogItem createDevice(
             @RequestBody DeviceCatalogItem item) {
         return service.createItem(item);
