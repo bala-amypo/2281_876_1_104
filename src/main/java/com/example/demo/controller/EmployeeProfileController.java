@@ -19,6 +19,7 @@ public class EmployeeProfileController {
 
     // POST /api/employees
     @PostMapping
+    @PreAuthorize("hasAnyRole('IT_OPERATOR','ADMIN')")
     public EmployeeProfile createEmployee(
             @RequestBody EmployeeProfile employee) {
         return service.createEmployee(employee);
@@ -26,6 +27,7 @@ public class EmployeeProfileController {
 
     // GET /api/employees
     @GetMapping
+    @PreAuthorize("hasAnyRole('IT_OPERATOR','ADMIN')")
     public List<EmployeeProfile> getAllEmployees() {
         return service.getAllEmployees();
     }
