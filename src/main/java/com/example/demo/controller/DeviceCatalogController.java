@@ -20,6 +20,7 @@ public class DeviceCatalogController {
 
     // POST /api/devices
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN','IT_OPERATOR')")
     public DeviceCatalogItem createDevice(
             @RequestBody DeviceCatalogItem item) {
         return service.createItem(item);
@@ -27,18 +28,21 @@ public class DeviceCatalogController {
 
     // GET /api/devices
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN','IT_OPERATOR')")
     public List<DeviceCatalogItem> getAllDevices() {
         return service.getAllItems();
     }
 
     // GET /api/devices/{id}
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','IT_OPERATOR')")
     public DeviceCatalogItem getDeviceById(@PathVariable Long id) {
         return service.getItemById(id);
     }
 
     // PUT /api/devices/{id}/active?active=true
     @PutMapping("/{id}/active")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public DeviceCatalogItem updateActiveStatus(
             @PathVariable Long id,
             @RequestParam boolean active) {
@@ -47,6 +51,7 @@ public class DeviceCatalogController {
 
     // DELETE /api/devices/{id}
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public void deleteDevice(@PathVariable Long id) {
         service.deleteItem(id);
     }
