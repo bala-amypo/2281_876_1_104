@@ -31,10 +31,8 @@ public class AuthController {
     @PostMapping("/register")
     public String register(@RequestBody RegisterRequest request) {
 
-        System.out.println("🔥 REGISTER CONTROLLER HIT 🔥");
-
         if (userRepo.findByEmail(request.getEmail()).isPresent()) {
-        throw new BadRequestException("Email already exists");
+            throw new BadRequestException("Email already exists");
         }
 
         UserAccount user = new UserAccount();
