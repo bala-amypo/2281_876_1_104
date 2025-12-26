@@ -1,9 +1,14 @@
 package com.example.demo.config;
 
-import io.swagger.v3.oas.models.*;
-import io.swagger.v3.oas.models.security.*;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
+import io.swagger.v3.oas.models.servers.Server;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-import org.springframework.context.annotation.*;
+import java.util.List;
 
 @Configuration
 public class SwaggerApiConfig {
@@ -16,14 +21,17 @@ public class SwaggerApiConfig {
                 .scheme("bearer")
                 .bearerFormat("JWT");
 
+        Server server = new Server()
+                .url("https://9127.32procr.amypo.ai/")
+                .description("Production Server");
+
         return new OpenAPI()
-                .components(
-                        new Components()
-                                .addSecuritySchemes("bearerAuth", bearerAuth)
-                )
                 .addSecurityItem(
-                        new SecurityRequirement()
-                                .addList("bearerAuth")
-                );
+                        new SecurityRequirement().addList("bearerAuth")
+                )
+                .components(
+                        new Components().addSecuritySchemes("bearerAuth", bearerAuth)
+                )
+                .servers(List.of(server));
     }
 }
