@@ -28,11 +28,13 @@ public class EligibilityCheckController {
     }
 
     @GetMapping("/employee/{employeeId}")
+    @PreAuthorize("hasAnyRole('AUDITOR','ADMIN')")
     public List<EligibilityCheckRecord> byEmployee(@PathVariable Long employeeId) {
         return service.getChecksByEmployee(employeeId);
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('AUDITOR','ADMIN')")
     public EligibilityCheckRecord getById(@PathVariable Long id) {
         return service.getById(id);
     }

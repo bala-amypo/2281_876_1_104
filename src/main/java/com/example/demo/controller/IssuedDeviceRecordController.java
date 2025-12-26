@@ -21,6 +21,7 @@ public class IssuedDeviceRecordController {
 
     // POST /api/issued-devices
     @PostMapping
+    @PreAuthorize("hasAnyRole('IT_OPERATOR','ADMIN')")
     public ResponseEntity<IssuedDeviceRecord> issueDevice(
             @RequestBody IssuedDeviceRecord record) {
         return ResponseEntity.ok(service.issueDevice(record));
@@ -28,12 +29,14 @@ public class IssuedDeviceRecordController {
 
     // PUT /api/issued-devices/{id}/return
     @PutMapping("/{id}/return")
+    @PreAuthorize("hasAnyRole('IT_OPERATOR','ADMIN')")
     public ResponseEntity<IssuedDeviceRecord> returnDevice(@PathVariable Long id) {
         return ResponseEntity.ok(service.returnDevice(id));
     }
 
     // GET /api/issued-devices/employee/{employeeId}
     @GetMapping("/employee/{employeeId}")
+    @PreAuthorize("hasAnyRole('IT_OPERATOR','ADMIN')")
     public ResponseEntity<List<IssuedDeviceRecord>> getByEmployee(
             @PathVariable Long employeeId) {
         return ResponseEntity.ok(service.getByEmployeeId(employeeId));
@@ -41,6 +44,7 @@ public class IssuedDeviceRecordController {
 
     // GET /api/issued-devices/{id}
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('IT_OPERATOR','ADMIN')")
     public ResponseEntity<IssuedDeviceRecord> getById(@PathVariable Long id) {
         return ResponseEntity.ok(service.getById(id));
     }
