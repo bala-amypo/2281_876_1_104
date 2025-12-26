@@ -19,6 +19,7 @@ public class EligibilityCheckController {
     }
 
     @PostMapping("/validate/{employeeId}/{deviceItemId}")
+    @PreAuthorize("hasAnyRole('ADMIN','IT_OPERATOR')")
     public EligibilityCheckRecord validate(
             @PathVariable Long employeeId,
             @PathVariable Long deviceItemId) {
