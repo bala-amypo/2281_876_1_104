@@ -4,6 +4,8 @@ import java.util.Date;
 
 import org.springframework.stereotype.Component;
 
+import com.example.demo.model.UserAccount;
+
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 
@@ -12,26 +14,45 @@ import javax.crypto.SecretKey;
 @Component
 public class JwtTokenProvider {
 
-    // MUST be at least 256 bits for HS256
-    private static final String SECRET =
-        "sdjhgbwubwwbgwiub8QFQ8qg87G1bfewifbiuwg7iu8wefqhjk";
+    private final SecretKey key;
+    private final long validityInMs;
 
-    private static final long EXPIRATION_TIME =
-        10 * 60 * 1000; // 10 minutes
+    // ✅ REQUIRED BY TESTS
+    public JwtTokenProvider(String secret, long validityInMs) {
+        this.key = Keys.hmacShaKeyFor(secret.getBytes());
+        this.validityInMs = validityInMs;
+    }
 
-    private final SecretKey key =
-        Keys.hmacShaKeyFor(SECRET.getBytes());
+    // ✅ REQUIRED BY SPRING (default bean)
+    public JwtTokenProvider() {
+        String secret =
+            "sdjhgbwubwwbgwiub8QFQ8qg87G1bfewifbiuwg7iu8wefqhjk";
+        this.key = Keys.hmacShaKeyFor(secret.getBytes());
+        this.validityInMs = 10 * 60 * 1000; // 10 minutes
+    }
 
+    // ✅ REQUIRED BY TESTS
+    public String generateToken(UserAccount user) {
+        return generateToken(user.getEmail(), user.getRole());
+    }
+
+    // Internal use
     public String generateToken(String email, String role) {
+        Date now = new Date();
+        Date expiry = new Date(now.getTime() + validityInMs);
+
         return Jwts.builder()
                 .setSubject(email)
                 .claim("role", role)
-                .setIssuedAt(new Date())
-                .setExpiration(
-                    new Date(System.currentTimeMillis() + EXPIRATION_TIME)
-                )
+                .setIssuedAt(now)
+                .setExpiration(expiry)
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
+    }
+
+    // ✅ REQUIRED BY TESTS
+    public String getUsername(String token) {
+        return getEmailFromToken(token);
     }
 
     public String getEmailFromToken(String token) {
