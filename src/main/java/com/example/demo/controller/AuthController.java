@@ -5,9 +5,9 @@ import org.springframework.web.bind.annotation.*;
 
 import com.example.demo.dto.AuthRequest;
 import com.example.demo.dto.AuthResponse;
+import com.example.demo.dto.RegisterRequest;
 import com.example.demo.exception.BadRequestException;
 import com.example.demo.model.UserAccount;
-import com.example.demo.dto.RegisterRequest;
 import com.example.demo.repository.UserAccountRepository;
 import com.example.demo.security.JwtTokenProvider;
 
@@ -29,21 +29,26 @@ public class AuthController {
 
     // ================= REGISTER =================
     @PostMapping("/register")
-    public String register(@RequestBody RegisterRequest user) {
+    public String register(@RequestBody RegisterRequest request) {
 
-        if (userRepo.findByEmail(user.getEmail()).isPresent()) {
+        if (userRepo.findByEmail(request.getEmail()).isPresent()) {
             throw new BadRequestException("Email already exists");
         }
 
+        UserAccount user = new UserAccount();
+        user.setFullName(request.getFullName());
+        user.setEmail(request.getEmail());
         user.setPasswordHash(
-                passwordEncoder.encode(user.getPasswordHash())
+                passwordEncoder.encode(request.getPassword())
         );
 
-        if (user.getRole() == null) {
-            user.setRole("IT_OPERATOR"); // default as per question
-        }
+        // default role as per question
+        user.setRole(
+                request.getRole() != null ? request.getRole() : "IT_OPERATOR"
+        );
 
         user.setActive(true);
+
         userRepo.save(user);
 
         return "User registered successfully";
