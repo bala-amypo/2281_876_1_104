@@ -2,37 +2,41 @@ package com.example.demo.security;
 
 import java.util.Date;
 
-import org.springframework.stereotype.Component;
+import io.jsonwebtoken.*;
+import io.jsonwebtoken.security.Keys;
 
-import com.example.demo.model.UserAccount;
+import javax.crypto.SecretKey;
 
-@Component
 public class JwtTokenProvider {
 
-    private String secretKey;
-    private int validityInMs;
+    private final SecretKey key;
+    private final long validityInMs;
 
-    // ✅ constructor REQUIRED by test cases
-    public JwtTokenProvider(String secretKey, int validityInMs) {
-        this.secretKey = secretKey;
+    // ⚠️ REQUIRED by tests
+    public JwtTokenProvider(String secret, long validityInMs) {
+        this.key = Keys.hmacShaKeyFor(secret.getBytes());
         this.validityInMs = validityInMs;
     }
 
-    // ✅ default constructor for Spring
-    public JwtTokenProvider() {
-        this.secretKey = "test-secret-key";
-        this.validityInMs = 3600000;
+    public String generateToken(String email, String role) {
+        Date now = new Date();
+        Date expiry = new Date(now.getTime() + validityInMs);
+
+        return Jwts.builder()
+                .setSubject(email)
+                .claim("role", role)
+                .setIssuedAt(now)
+                .setExpiration(expiry)
+                .signWith(key, SignatureAlgorithm.HS256)
+                .compact();
     }
 
-    public String generateToken(UserAccount user) {
-        return user.getEmail() + ":" + user.getRole();
-    }
-
-    public boolean validateToken(String token) {
-        return token != null && token.contains(":");
-    }
-
-    public String getUsername(String token) {
-        return token.split(":")[0];
+    public String getEmailFromToken(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getSubject();
     }
 }
