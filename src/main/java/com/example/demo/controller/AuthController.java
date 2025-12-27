@@ -54,7 +54,7 @@ public class AuthController {
         return "User registered successfully";
     }
 
-    // ================= LOGIN =================
+    
     @PostMapping("/login")
     public AuthResponse login(@RequestBody AuthRequest request) {
 
