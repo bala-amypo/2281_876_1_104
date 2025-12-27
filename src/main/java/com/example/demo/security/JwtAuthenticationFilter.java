@@ -53,7 +53,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 if (email != null &&
                     SecurityContextHolder.getContext().getAuthentication() == null) {
 
-                    // 🔥 CRITICAL FIX: add ROLE_ prefix
+                    //  add ROLE_ prefix
                     SimpleGrantedAuthority authority =
                         new SimpleGrantedAuthority("ROLE_" + role);
 
