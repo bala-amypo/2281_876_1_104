@@ -1,17 +1,19 @@
 package com.example.demo.service;
 
 import java.util.List;
-import com.example.demo.model.EmployeeProfile;
+import com.example.demo.model.IssuedDeviceRecord;
 
-public interface EmployeeProfileService {
+public interface IssuedDeviceRecordService {
 
-    EmployeeProfile createEmployee(EmployeeProfile employee);
+    IssuedDeviceRecord issueDevice(IssuedDeviceRecord record);
 
-    EmployeeProfile getEmployeeById(Long id);
+    IssuedDeviceRecord returnDevice(Long recordId);
 
-    List<EmployeeProfile> getAllEmployees();
+    List<IssuedDeviceRecord> getByEmployeeId(Long employeeId);
 
-    EmployeeProfile updateEmployeeStatus(Long id, boolean active);
+    List<IssuedDeviceRecord> getActiveByEmployeeId(Long employeeId);
 
-    void deleteEmployee(Long id);
+    IssuedDeviceRecord getById(Long id);
+
+    long countActiveDevicesForEmployee(Long employeeId);
 }
