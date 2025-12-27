@@ -27,7 +27,7 @@ public class AuthController {
         this.jwtTokenProvider = jwtTokenProvider;
     }
 
-    // ================= REGISTER =================
+    
     @PostMapping("/register")
     public String register(@RequestBody RegisterRequest request) {
 
