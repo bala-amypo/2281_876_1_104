@@ -1,80 +1,80 @@
 package com.example.demo.security;
 
-import java.io.IOException;
-import java.util.List;
-
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import java.util.Date;
 import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
+import com.example.demo.model.UserAccount;
+import io.jsonwebtoken.*;
+import io.jsonwebtoken.security.Keys;
+import javax.crypto.SecretKey;
 
 @Component
-public class JwtAuthenticationFilter extends OncePerRequestFilter {
+public class JwtTokenProvider {
 
-    private final JwtTokenProvider jwtTokenProvider;
+    private final SecretKey key;
+    private final long validityInMs;
 
-    public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider) {
-        this.jwtTokenProvider = jwtTokenProvider;
+    // 🔥 REQUIRED BY TESTS
+    public JwtTokenProvider(String secret, long validityInMs) {
+        this.key = Keys.hmacShaKeyFor(secret.getBytes());
+        this.validityInMs = validityInMs;
     }
 
-    @Override
-    protected void doFilterInternal(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            FilterChain filterChain)
-            throws ServletException, IOException {
-
-        String path = request.getServletPath();
-
-        
-        if (request.getServletPath().startsWith("/auth")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        String header = request.getHeader("Authorization");
-
-        if (header != null && header.startsWith("Bearer ")) {
-
-            String token = header.substring(7);
-
-            if (jwtTokenProvider.validateToken(token)) {
-
-                String email = jwtTokenProvider.getUsername(token);
-                String role = jwtTokenProvider.getRole(token); 
-
-                if (email != null &&
-                    SecurityContextHolder.getContext().getAuthentication() == null) {
-
-                    //  add ROLE_ prefix
-                    SimpleGrantedAuthority authority =
-                        new SimpleGrantedAuthority("ROLE_" + role);
-
-                    UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(
-                            email,
-                            null,
-                            List.of(authority)
-                        );
-
-                    authentication.setDetails(
-                        new WebAuthenticationDetailsSource()
-                            .buildDetails(request)
-                    );
-
-                    SecurityContextHolder.getContext()
-                        .setAuthentication(authentication);
-                }
-            }
-        }
-
-        filterChain.doFilter(request, response);
+    // 🔥 REQUIRED BY SPRING
+    public JwtTokenProvider() {
+        String secret =
+            "sdjhgbwubwwbgwiub8QFQ8qg87G1bfewifbiuwg7iu8wefqhjk";
+        this.key = Keys.hmacShaKeyFor(secret.getBytes());
+        this.validityInMs = 10 * 60 * 1000;
     }
+
+    public String generateToken(UserAccount user) {
+        return generateToken(user.getEmail(), user.getRole());
+    }
+
+    public String generateToken(String email, String role) {
+        Date now = new Date();
+        Date expiry = new Date(now.getTime() + validityInMs);
+
+        return Jwts.builder()
+                .setSubject(email)
+                .claim("role", role)
+                .setIssuedAt(now)
+                .setExpiration(expiry)
+                .signWith(key, SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    public String getUsername(String token) {
+        return getEmailFromToken(token);
+    }
+
+    public String getEmailFromToken(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getSubject();
+    }
+
+    public boolean validateToken(String token) {
+        try {
+            Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token);
+            return true;
+        } catch (JwtException | IllegalArgumentException e) {
+            return false;
+        }
+    }
+    public String getRole(String token) {
+    return Jwts.parserBuilder()
+            .setSigningKey(key)
+            .build()
+            .parseClaimsJws(token)
+            .getBody()
+            .get("role", String.class);
+    }
+
 }
