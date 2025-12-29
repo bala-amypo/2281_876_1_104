@@ -18,7 +18,7 @@ public class EmployeeProfileController {
         this.service = service;
     }
 
-    // POST /api/employees
+    
     @PostMapping
     @PreAuthorize("hasAnyRole('IT_OPERATOR','ADMIN')")
     public EmployeeProfile createEmployee(
@@ -26,21 +26,21 @@ public class EmployeeProfileController {
         return service.createEmployee(employee);
     }
 
-    // GET /api/employees
+    
     @GetMapping
     @PreAuthorize("hasAnyRole('IT_OPERATOR','ADMIN')")
     public List<EmployeeProfile> getAllEmployees() {
         return service.getAllEmployees();
     }
 
-    // GET /api/employees/{id}
+    
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('IT_OPERATOR','ADMIN')")
     public EmployeeProfile getEmployeeById(@PathVariable Long id) {
         return service.getEmployeeById(id);
     }
 
-    // PUT /api/employees/{id}/status?active=true
+    
     @PutMapping("/{id}/status")
     @PreAuthorize("hasAnyRole('ADMIN')")
     public EmployeeProfile updateStatus(
@@ -49,7 +49,7 @@ public class EmployeeProfileController {
         return service.updateEmployeeStatus(id, active);
     }
 
-    // DELETE /api/employees/{id}
+    
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN')")
     public void deleteEmployee(@PathVariable Long id) {
