@@ -13,13 +13,13 @@ public class JwtTokenProvider {
     private final SecretKey key;
     private final long validityInMs;
 
-    // 🔥 REQUIRED BY TESTS
+   
     public JwtTokenProvider(String secret, long validityInMs) {
         this.key = Keys.hmacShaKeyFor(secret.getBytes());
         this.validityInMs = validityInMs;
     }
 
-    // 🔥 REQUIRED BY SPRING
+   
     public JwtTokenProvider() {
         String secret =
             "sdjhgbwubwwbgwiub8QFQ8qg87G1bfewifbiuwg7iu8wefqhjk";
