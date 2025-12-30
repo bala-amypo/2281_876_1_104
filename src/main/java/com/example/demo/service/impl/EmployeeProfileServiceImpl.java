@@ -22,17 +22,17 @@ public class EmployeeProfileServiceImpl implements EmployeeProfileService {
     @Override
     public EmployeeProfile createEmployee(EmployeeProfile employee) {
 
-        // ✅ Duplicate Employee ID
+        
         if (repo.findByEmployeeId(employee.getEmployeeId()).isPresent()) {
             throw new BadRequestException("EmployeeId already exists");
         }
 
-        // Email uniqueness is OPTIONAL in tests
+       
         if (repo.findByEmail(employee.getEmail()).isPresent()) {
             throw new BadRequestException("Email already exists");
         }
 
-        // Default active = true
+       
         if (employee.getActive() == null) {
             employee.setActive(true);
         }

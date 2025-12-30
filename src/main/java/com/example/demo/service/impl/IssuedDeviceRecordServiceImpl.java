@@ -51,7 +51,7 @@ public class IssuedDeviceRecordServiceImpl implements IssuedDeviceRecordService 
             throw new BadRequestException("inactive");
         }
 
-        // ❌ Any active issuance exists
+        
         long activeIssued =
                 issuedRepo.countByEmployeeIdAndStatus(record.getEmployeeId(), "ISSUED");
 

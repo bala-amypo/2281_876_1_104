@@ -22,23 +22,23 @@ public class PolicyRuleServiceImpl implements PolicyRuleService {
     @Override
     public PolicyRule createRule(PolicyRule rule) {
 
-        // ✅ ruleCode validation
+        
         if (rule.getRuleCode() == null || rule.getRuleCode().isBlank()) {
             throw new BadRequestException("Rule code");
         }
 
-        // ✅ Duplicate ruleCode
+        
         if (repo.findByRuleCode(rule.getRuleCode()).isPresent()) {
             throw new BadRequestException("Rule code");
         }
 
-        // ✅ maxDevicesAllowed validation
+        
         if (rule.getMaxDevicesAllowed() != null && rule.getMaxDevicesAllowed() <= 0) {
             throw new BadRequestException("maxDevicesAllowed");
         }
 
 
-        // ✅ default active
+      
         if (rule.getActive() == null) {
             rule.setActive(true);
         }
