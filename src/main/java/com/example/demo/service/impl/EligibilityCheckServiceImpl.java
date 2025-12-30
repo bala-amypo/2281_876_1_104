@@ -68,14 +68,14 @@ public class EligibilityCheckServiceImpl implements EligibilityCheckService {
         return eligibilityRepo.save(rec);
     }
 
-    // 🔑 ACTIVE ASSIGNMENT CHECK (TEST 57)
+    
     if (!issuedRepo.findActiveByEmployeeAndDevice(employeeId, deviceItemId).isEmpty()) {
         rec.setIsEligible(false);
         rec.setReason("Active issuance exists");
         return eligibilityRepo.save(rec);
     }
 
-    // 🔑 DEVICE MAX CHECK (TEST 58)
+    
     long activeCount = issuedRepo.countActiveDevicesForEmployee(employeeId);
     if (activeCount >= dev.getMaxAllowedPerEmployee()) {
         rec.setIsEligible(false);
@@ -83,7 +83,7 @@ public class EligibilityCheckServiceImpl implements EligibilityCheckService {
         return eligibilityRepo.save(rec);
     }
 
-    // 🔑 POLICY CHECKS (TEST 59, 63)
+    
     for (PolicyRule rule : policyRepo.findByActiveTrue()) {
 
         boolean deptOk = rule.getAppliesToDepartment() == null
